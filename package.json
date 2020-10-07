@@ -1,0 +1,21 @@
+{
+  "name": "resto-covid",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Pierre Criulanscy <pcriulan@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/webpack",
+      "**/webpack/**",
+      "**/webpack-cli",
+      "**/webpack-cli/**",
+      "**/webpack-dev-server",
+      "**/webpack-dev-server/**"
+    ]
+  }
+}
