@@ -1,11 +1,11 @@
-export const createInMemoryLocalDataRepository = () => {
-  let privateKey;
+export const createInMemoryLocalDataRepository = ({ privateKey } = {}) => {
+  let _privateKey = privateKey;
   return {
     getPrivateKey() {
-      return privateKey;
+      return _privateKey;
     },
     savePrivateKey(thePrivateKey) {
-      privateKey = thePrivateKey;
+      _privateKey = thePrivateKey;
     },
   };
 };

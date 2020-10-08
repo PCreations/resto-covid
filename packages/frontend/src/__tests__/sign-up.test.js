@@ -11,18 +11,13 @@ describe("signUp", () => {
     const restaurantName = "My Restaurant";
     const password = "my-restaurant-password";
     const email = "myrestaurant@example.com";
-    const restaurantPublicKey = "restaurant-public-key";
-    const restaurantPrivateKey = "restaurant-private-key";
     const authenticationGateway = createInMemoryAuthenticationGateway({
       getNextRestaurantId() {
         return restaurantId;
       },
     });
     const restaurantRepository = createInMemoryRestaurantRepository();
-    const encrypter = createIdentityEncrypter({
-      nextGeneratedPublicKey: restaurantPublicKey,
-      nextGeneratedPrivateKey: restaurantPrivateKey,
-    });
+    const encrypter = createIdentityEncrypter();
     const localDataRepository = createInMemoryLocalDataRepository();
     const signUp = createSignUp({
       authenticationGateway,
@@ -37,6 +32,10 @@ describe("signUp", () => {
       password,
     });
 
+    const {
+      publicKey: restaurantPublicKey,
+      privateKey: restaurantPrivateKey,
+    } = encrypter.getLastGeneratedKeyPair();
     const restaurant = await restaurantRepository.get({ restaurantId });
     const privateKey = await localDataRepository.getPrivateKey();
     expect(restaurant).toEqual({
