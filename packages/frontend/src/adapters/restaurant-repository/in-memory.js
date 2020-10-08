@@ -1,6 +1,9 @@
 export const createInMemoryRestaurantRepository = (restaurantsById = {}) => {
   const restaurants = { ...restaurantsById };
   return {
+    save(restaurant) {
+      restaurants[restaurant.id] = restaurant;
+    },
     addContact({ restaurantId, encryptedContact, now }) {
       restaurantsById[restaurantId].contacts.push({
         date: now,
