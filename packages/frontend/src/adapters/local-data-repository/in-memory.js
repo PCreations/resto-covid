@@ -1,10 +1,10 @@
 export const createInMemoryLocalDataRepository = ({ privateKey } = {}) => {
   let _privateKey = privateKey;
   return {
-    getPrivateKey() {
+    async getPrivateKey() {
       return _privateKey;
     },
-    savePrivateKey(thePrivateKey) {
+    async savePrivateKey(thePrivateKey) {
       _privateKey = thePrivateKey;
     },
   };
