@@ -11,11 +11,16 @@ export const createIdentityEncrypter = () => {
       };
     },
     encrypt({ data, publicKey }) {
-      return JSON.stringify({ ...data, [publicKey]: true });
+      return JSON.stringify({
+        ...data,
+        [`${publicKey}${lastGeneratedPrivateKey}`]: true,
+      });
     },
-    decrypt({ privateKey, data }) {
-      const publicKey = privateKey.replace("private", "public");
-      const { [publicKey]: _, ...theDecryptedData } = JSON.parse(data);
+    decrypt({ publicKey, privateKey, data }) {
+      const {
+        [`${publicKey}${privateKey}`]: _,
+        ...theDecryptedData
+      } = JSON.parse(data);
       return theDecryptedData;
     },
     getLastGeneratedKeyPair() {
