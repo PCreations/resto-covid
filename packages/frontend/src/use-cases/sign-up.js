@@ -1,6 +1,7 @@
 export const createSignUp = ({
   authenticationGateway,
   restaurantRepository,
+  qrCodeGenerator,
   encrypter,
   localDataRepository,
 }) => async ({ restaurantName, email, password }) =>
@@ -10,11 +11,13 @@ export const createSignUp = ({
       email,
       password,
     });
+    const qrCode = await qrCodeGenerator.generate({ restaurantId });
     const { privateKey, publicKey } = encrypter.generateKeyPair();
     const restaurant = {
       id: restaurantId,
       name: restaurantName,
       publicKey,
+      qrCode,
     };
     await localDataRepository.savePrivateKey(privateKey);
     await restaurantRepository.save(restaurant);

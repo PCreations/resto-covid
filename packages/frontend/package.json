@@ -8,6 +8,8 @@
     "@testing-library/user-event": "^7.1.2",
     "faker": "^5.1.0",
     "firebase": "^7.22.1",
+    "prettier": "^2.1.2",
+    "qrcode": "^1.4.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",

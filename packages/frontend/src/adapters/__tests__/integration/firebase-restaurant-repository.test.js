@@ -9,13 +9,13 @@ const testUser = {
   password: "pcriulan+testuser@gmail.com",
 };
 
-describe.skip("firebaseRestaurantRepository", () => {
+describe("firebaseRestaurantRepository", () => {
   it("saves a restaurant", async (done) => {
     await firebaseAuth.signInWithEmailAndPassword(
       testUser.email,
       testUser.password
     );
-    firebaseAuth.onAuthStateChanged(async (user) => {
+    const unsubscribe = firebaseAuth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
           const restaurant = {
@@ -32,6 +32,7 @@ describe.skip("firebaseRestaurantRepository", () => {
           });
           expect(retrievedRestaurant).toEqual(restaurant);
         } finally {
+          unsubscribe();
           await firebaseDb.collection("restaurants").doc(testUser.id).delete();
           done();
         }
@@ -44,7 +45,7 @@ describe.skip("firebaseRestaurantRepository", () => {
       testUser.email,
       testUser.password
     );
-    firebaseAuth.onAuthStateChanged(async (user) => {
+    const unsubscribe = firebaseAuth.onAuthStateChanged(async (user) => {
       if (user) {
         let contactIds = [];
         try {
@@ -82,6 +83,7 @@ describe.skip("firebaseRestaurantRepository", () => {
             },
           ]);
         } finally {
+          unsubscribe();
           await Promise.all([
             firebaseDb.collection("restaurants").doc(testUser.id).delete(),
             ...contactIds.map((contactId) =>

@@ -1,3 +1,4 @@
+import { BadCredentialsError } from "../../domain/errors";
 import { auth as firebaseAuth } from "../shared/firebase";
 
 export const createFirebaseAuthenticationGateway = () => {
@@ -16,14 +17,18 @@ export const createFirebaseAuthenticationGateway = () => {
     },
     async signIn({ password, email }) {
       const userAuthenticated = new Promise((resolve) => {
-        firebaseAuth.onAuthStateChanged((user) => {
+        const unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
           if (user) {
+            unsubscribe();
             resolve();
           }
         });
       });
       return firebaseAuth
         .signInWithEmailAndPassword(email, password)
+        .catch(() => {
+          throw new BadCredentialsError();
+        })
         .then(userAuthenticated);
     },
     get currentRestaurantUser() {
