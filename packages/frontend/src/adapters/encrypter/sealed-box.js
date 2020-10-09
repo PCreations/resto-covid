@@ -25,15 +25,17 @@ export const createSealedBoxEncrypter = () => {
       );
     },
     decrypt({ publicKey, privateKey, data }) {
-      return JSON.parse(
-        encodeUTF8(
-          sealedBox.open(
-            decodeBase64(data),
-            decodeBase64(publicKey),
-            decodeBase64(privateKey)
-          )
-        )
+      const decodedData = decodeBase64(data);
+      const decodedPublicKey = decodeBase64(publicKey);
+      const decodedPrivateKey = decodeBase64(privateKey);
+      const decryptedData = sealedBox.open(
+        decodedData,
+        decodedPublicKey,
+        decodedPrivateKey
       );
+      debugger;
+      const utf8data = encodeUTF8(decryptedData);
+      return JSON.parse(utf8data);
     },
   };
 };

@@ -17,11 +17,12 @@ export const createFirebaseRestaurantRepository = () => {
         .doc(restaurantId)
         .get()
         .then((doc) => {
-          const { id, name, publicKey } = doc.data();
+          const { id, name, publicKey, qrCode } = doc.data();
           return {
             id,
             name,
             publicKey,
+            qrCode,
           };
         });
     },

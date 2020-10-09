@@ -3,6 +3,17 @@ import { auth as firebaseAuth } from "../shared/firebase";
 
 export const createFirebaseAuthenticationGateway = () => {
   return {
+    onRestaurantSignedIn(cb) {
+      return firebaseAuth.onAuthStateChanged((user) => {
+        if (user) {
+          cb({
+            name: user.displayName,
+            email: user.email,
+            id: user.uid,
+          });
+        }
+      });
+    },
     async createRestaurantUser({ restaurantName, email, password }) {
       return new Promise((resolve) =>
         firebaseAuth
@@ -33,11 +44,13 @@ export const createFirebaseAuthenticationGateway = () => {
     },
     get currentRestaurantUser() {
       const user = firebaseAuth.currentUser;
-      return {
-        name: user.displayName,
-        email: user.email,
-        id: user.uid,
-      };
+      return user
+        ? {
+            name: user.displayName,
+            email: user.email,
+            id: user.uid,
+          }
+        : null;
     },
   };
 };

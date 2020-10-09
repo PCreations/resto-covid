@@ -22,6 +22,7 @@ describe("firebaseRestaurantRepository", () => {
             id: testUser.id,
             name: "The Restaurant",
             publicKey: "the-public-key",
+            qrCode: "some-qr-code-data",
           };
           const restaurantRepository = createFirebaseRestaurantRepository();
 

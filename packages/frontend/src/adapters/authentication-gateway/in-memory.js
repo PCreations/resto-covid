@@ -4,9 +4,13 @@ export const createInMemoryAuthenticationGateway = ({
   getNextRestaurantId,
   users = {},
 } = {}) => {
+  let listeners = [];
   let lastSignedUpRestaurant = {};
   let currentRestaurantUser;
   return {
+    onRestaurantSignedIn(cb) {
+      listeners.push(cb);
+    },
     createRestaurantUser({ restaurantName, email, password }) {
       const id = getNextRestaurantId();
       lastSignedUpRestaurant = {
@@ -22,6 +26,7 @@ export const createInMemoryAuthenticationGateway = ({
       if (!currentRestaurantUser) {
         throw new BadCredentialsError();
       }
+      listeners.map((cb) => cb(currentRestaurantUser));
     },
     get lastSignedUpRestaurant() {
       return lastSignedUpRestaurant;

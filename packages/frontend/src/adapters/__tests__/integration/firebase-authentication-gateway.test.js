@@ -28,7 +28,13 @@ describe("firebaseAuthenticationGateway", () => {
     expect(id).toBeDefined();
   });
 
-  it("signs in a user", async (done) => {
+  it("returns null as the current user if the restaurant is not signed in", () => {
+    const firebaseAuthenticationGateway = createFirebaseAuthenticationGateway();
+
+    expect(firebaseAuthenticationGateway.currentRestaurantUser).toBeNull();
+  });
+
+  it.only("signs in a user", async (done) => {
     const restaurantName = "The Restaurant";
     const email = `restaurant${+new Date()}@email.com`;
     const password = "password-restaurant@email.com";
@@ -39,17 +45,22 @@ describe("firebaseAuthenticationGateway", () => {
       password,
     });
 
-    try {
-      await firebaseAuthenticationGateway.signIn({ email, password });
+    firebaseAuthenticationGateway.onRestaurantSignedIn((user) => {
+      try {
+        expect(user).toEqual({
+          name: restaurantName,
+          email,
+          id: userId,
+        });
+        expect(firebaseAuthenticationGateway.currentRestaurantUser).toEqual(
+          user
+        );
+      } finally {
+        firebaseAuth.currentUser.delete().then(done);
+      }
+    });
 
-      expect(firebaseAuthenticationGateway.currentRestaurantUser).toEqual({
-        name: restaurantName,
-        email,
-        id: userId,
-      });
-    } finally {
-      firebaseAuth.currentUser.delete().then(done);
-    }
+    await firebaseAuthenticationGateway.signIn({ email, password });
   });
 
   it("throw a BadCredentialsError if the given credentials are wrong", async () => {
