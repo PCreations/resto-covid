@@ -2,7 +2,7 @@ import { auth as firebaseAuth } from "../shared/firebase";
 
 export const createFirebaseAuthenticationGateway = () => {
   return {
-    createRestaurantUser({ restaurantName, email, password }) {
+    async createRestaurantUser({ restaurantName, email, password }) {
       return new Promise((resolve) =>
         firebaseAuth
           .createUserWithEmailAndPassword(email, password)
@@ -13,6 +13,26 @@ export const createFirebaseAuthenticationGateway = () => {
           )
           .then(resolve)
       );
+    },
+    async signIn({ password, email }) {
+      const userAuthenticated = new Promise((resolve) => {
+        firebaseAuth.onAuthStateChanged((user) => {
+          if (user) {
+            resolve();
+          }
+        });
+      });
+      return firebaseAuth
+        .signInWithEmailAndPassword(email, password)
+        .then(userAuthenticated);
+    },
+    get currentRestaurantUser() {
+      const user = firebaseAuth.currentUser;
+      return {
+        name: user.displayName,
+        email: user.email,
+        id: user.uid,
+      };
     },
   };
 };
