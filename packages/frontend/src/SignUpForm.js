@@ -17,6 +17,7 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/core";
+import { getAnalytics } from "./adapters/shared/firebase";
 
 const SIGNUP_WITH_ANOTHER_RESTAURANT_CONFIRMATION_TEXT = "CONFIRMATION";
 
@@ -59,6 +60,10 @@ const doSignUp = ({ signUp, backupPrivateKey, notifySignUpSuccess }) => async (
     await backupPrivateKey({
       restaurantId,
       words: values.words,
+    });
+    getAnalytics().logEvent("sign_up", {
+      restaurantName: values.name,
+      email: values.email,
     });
     notifySignUpSuccess();
   } catch (err) {
@@ -274,7 +279,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
           </FormControl>
           <FormControl>
             <FormLabel htmlFor="words" color="red">
-              Sauvegarder précieusement cette liste de mots, elle vous permettra
+              Sauvegardez précieusement cette liste de mots, elle vous permettra
               de vous connecter depuis d'autres appareils.
             </FormLabel>
             <Textarea

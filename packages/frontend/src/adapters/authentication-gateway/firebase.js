@@ -5,17 +5,19 @@ export const createFirebaseAuthenticationGateway = () => {
   return {
     onRestaurantSignedIn(cb) {
       return firebaseAuth.onAuthStateChanged((user) => {
-        if (user) {
-          cb({
-            name: user.displayName,
-            email: user.email,
-            id: user.uid,
-          });
-        }
+        cb(
+          user
+            ? {
+                name: user.displayName,
+                email: user.email,
+                id: user.uid,
+              }
+            : null
+        );
       });
     },
     async createRestaurantUser({ restaurantName, email, password }) {
-      return new Promise((resolve) =>
+      return new Promise((resolve, reject) =>
         firebaseAuth
           .createUserWithEmailAndPassword(email, password)
           .then((userCredential) =>
@@ -23,7 +25,7 @@ export const createFirebaseAuthenticationGateway = () => {
               .updateProfile({ displayName: restaurantName })
               .then(() => userCredential.user.uid)
           )
-          .then(resolve)
+          .then(resolve, reject)
       );
     },
     async signIn({ password, email }) {

@@ -2,8 +2,6 @@ import { createInMemoryRestaurantRepository } from "../adapters/restaurant-repos
 import { createIdentityEncrypter } from "../adapters/encrypter";
 import { createAddContact } from "../use-cases/add-contact";
 import {
-  EmailMissingError,
-  InvalidEmailError,
   FirstNameMissingError,
   LastNameMissingError,
   PhoneNumberMissingError,
@@ -13,7 +11,6 @@ describe("addContact", () => {
   it("adds contact information encrypted from restaurant's public key", async () => {
     const now = new Date();
     const contactInformation = {
-      email: "pcriulan@gmail.com",
       firstName: "Pierre",
       lastName: "Criulanscy",
       phoneNumber: "0102030405",
@@ -47,18 +44,6 @@ describe("addContact", () => {
   });
 
   describe("contact information errors", () => {
-    it("should throw an EmailMissingError if email is empty", async () => {
-      await expectAddContact({
-        email: "",
-      }).toThrow(EmailMissingError);
-    });
-
-    it("should throw an InvalidEmailError if email is invalid", async () => {
-      await expectAddContact({
-        email: "invalid-email@+.com",
-      }).toThrow(InvalidEmailError);
-    });
-
     it("should throw an FirstNameMissingError is first name is empty", async () => {
       await expectAddContact({
         firstName: "",

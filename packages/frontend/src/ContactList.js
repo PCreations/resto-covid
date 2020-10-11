@@ -1,10 +1,5 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useContext,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
+import { useHistory } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useReactToPrint } from "react-to-print";
 import {
@@ -12,7 +7,6 @@ import {
   Box,
   Flex,
   Heading,
-  ButtonGroup,
   Button,
   Modal,
   ModalOverlay,
@@ -22,19 +16,23 @@ import {
   ModalBody,
   ModalFooter,
   Spinner,
-  List,
-  ListItem,
   Image,
   Text,
   Textarea,
   FormControl,
   FormErrorMessage,
+  Grid,
 } from "@chakra-ui/core";
 import { format } from "date-fns";
-import { AiOutlineQrcode } from "react-icons/ai";
+import { AiOutlineQrcode, AiOutlineExport } from "react-icons/ai";
 import { MdPersonAdd } from "react-icons/md";
 import { AuthStateContext } from "./AuthContext";
-import { AddContactForm } from "./AddContactForm";
+import "./qr-code.css";
+
+const formatContact = ({ date, contact }) => ({
+  date: format(date, "dd/MM/yyyy HH:mm"),
+  ...contact,
+});
 
 const retrieveContacts = async ({
   getContacts,
@@ -47,8 +45,11 @@ const retrieveContacts = async ({
       restaurantId: currentRestaurantUser.id,
       today: new Date(),
     });
+    const formattedContacts = (contacts || [])
+      .sort((a, b) => b.date - a.date)
+      .map(formatContact);
     setNeedToRestorePrivateKey(false);
-    setContacts(contacts);
+    setContacts(formattedContacts);
   } catch (err) {
     setNeedToRestorePrivateKey(true);
   }
@@ -56,7 +57,14 @@ const retrieveContacts = async ({
 
 class QRCode extends React.Component {
   render() {
-    return <Image src={this.props.qrCode} width="100%" heigh="100%" />;
+    return (
+      <Image
+        src={this.props.qrCode}
+        width="100%"
+        heigh="100%"
+        className="qr-code"
+      />
+    );
   }
 }
 
@@ -64,29 +72,43 @@ QRCode.propTypes = {
   qrCode: PropTypes.string.isRequired,
 };
 
+const HeadCell = ({ name }) => (
+  <Heading as="h6" w="1O0%" fontSize="1em" textAlign="center">
+    {name}
+  </Heading>
+);
+
+const RowCell = ({ data, isEven }) => (
+  <Box w="100%" bg={isEven ? "gray.100" : "gray.50"} padding="4px">
+    {data}
+  </Box>
+);
+
 export const ContactList = ({
-  addContact,
   getContacts,
   restorePrivateKey,
   restaurantRepository,
 }) => {
+  const history = useHistory();
   const { currentRestaurantUser } = useContext(AuthStateContext);
   const [contacts, setContacts] = useState(null);
   const [restaurant, setRestaurant] = useState();
-  const [modalScreen, setModalScreen] = useState("qrcode");
   const [needToRestorePrivateKey, setNeedToRestorePrivateKey] = useState(false);
   const [backupWords, setBackupWords] = useState();
   const [isRetrievingPrivateKey, setIsRetrievingPrivateKey] = useState(false);
   const [retrievePrivateKeyError, setRetrievePrivateKeyError] = useState(null);
 
   useEffect(() => {
-    retrieveContacts({
-      getContacts,
-      currentRestaurantUser,
-      setContacts,
-      setNeedToRestorePrivateKey,
-    });
+    if (restaurant) {
+      retrieveContacts({
+        getContacts,
+        currentRestaurantUser,
+        setContacts,
+        setNeedToRestorePrivateKey,
+      });
+    }
   }, [
+    restaurant,
     setContacts,
     getContacts,
     currentRestaurantUser,
@@ -94,11 +116,22 @@ export const ContactList = ({
   ]);
 
   useEffect(() => {
+    let retriesCount = 0;
     const retrieveRestaurant = async () => {
-      const restaurant = await restaurantRepository.get({
-        restaurantId: currentRestaurantUser.id,
-      });
-      setRestaurant(restaurant);
+      try {
+        const restaurant = await restaurantRepository.get({
+          restaurantId: currentRestaurantUser.id,
+        });
+        setRestaurant(restaurant);
+      } catch (err) {
+        if (retriesCount > 3) {
+          throw err;
+        }
+        setTimeout(() => {
+          retrieveRestaurant();
+        }, 250 * 2 ** retriesCount);
+        retriesCount += 1;
+      }
     };
     retrieveRestaurant();
   }, [setRestaurant, currentRestaurantUser, restaurantRepository]);
@@ -106,22 +139,12 @@ export const ContactList = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const openQrCodeModal = () => {
-    setModalScreen("qrcode");
     onOpen();
   };
 
-  const openAddContactModal = () => {
-    setModalScreen("addcontact");
-    onOpen();
+  const redirectToAddContactForm = () => {
+    history.push(`/form/${restaurant.id}?redirectToDashboard`);
   };
-
-  const onContactAdded = useCallback(
-    ({ date, ...contact }) => {
-      onClose();
-      setContacts([{ contact, date }].concat(contacts));
-    },
-    [onClose, setContacts, contacts]
-  );
 
   const handleBackupWordsChange = (event) => {
     setBackupWords(event.target.value);
@@ -156,15 +179,27 @@ export const ContactList = ({
     content: () => qrCodeRef.current,
   });
 
+  const mailBody = (contacts || [])
+    .map(
+      (contact) =>
+        `${contact.date} - ${contact.firstName} ${contact.lastName} - ${contact.phoneNumber}`
+    )
+    .join("\n");
   return (
     <Box>
       {restaurant ? (
         <Flex alignItems="center" direction="column">
-          <Box>
-            <Heading>{restaurant.name}</Heading>
-          </Box>
-          <ButtonGroup spacing={4} marginTop="1em">
+          <Flex direction="column">
+            <Heading
+              marginBottom="0.5em"
+              textAlign="center"
+              as="h1"
+              fontSize="1.5em"
+            >
+              {restaurant.name}
+            </Heading>
             <Button
+              marginBottom="0.5em"
               leftIcon={AiOutlineQrcode}
               variantColor="teal"
               variant="solid"
@@ -172,43 +207,51 @@ export const ContactList = ({
             >
               Afficher le QR Code
             </Button>
-            <Button
-              leftIcon={MdPersonAdd}
-              variantColor="green"
-              color="white"
-              variant="solid"
-              onClick={openAddContactModal}
-            >
-              Ajouter un client
-            </Button>
-          </ButtonGroup>
-          <Modal onClose={onClose} isOpen={isOpen} isCentered>
+            {needToRestorePrivateKey === false && (
+              <>
+                <Button
+                  leftIcon={MdPersonAdd}
+                  variantColor="green"
+                  color="white"
+                  variant="solid"
+                  onClick={redirectToAddContactForm}
+                >
+                  Ajouter un client
+                </Button>
+                <Button
+                  leftIcon={AiOutlineExport}
+                  variantColor="blue"
+                  color="white"
+                  variant="solid"
+                  marginTop="0.5em"
+                  onClick={() =>
+                    (window.location = `mailto:?body=${encodeURI(mailBody)}`)
+                  }
+                >
+                  Exporter le fichier
+                </Button>
+              </>
+            )}
+          </Flex>
+          <Modal
+            onClose={onClose}
+            isOpen={isOpen}
+            isCentered
+            scrollBehavior="outside"
+          >
             <ModalOverlay />
             <ModalContent>
-              <ModalHeader>
-                {modalScreen === "qrcode"
-                  ? "QR Code d'ajout d'information client"
-                  : "Ajout d'un client"}
-              </ModalHeader>
+              <ModalHeader>QR Code d'ajout d'information client</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
-                {modalScreen === "qrcode" ? (
-                  <Box>
-                    <QRCode qrCode={restaurant.qrCode} ref={qrCodeRef} />
-                    <Flex justify="center">
-                      <Button onClick={handlePrint} variantColor="teal">
-                        Imprimer le QR code
-                      </Button>
-                    </Flex>
-                  </Box>
-                ) : (
-                  <AddContactForm
-                    onContactAdded={onContactAdded}
-                    addContact={addContact}
-                    restaurantId={restaurant.id}
-                    saveInputs={false}
-                  />
-                )}
+                <Box>
+                  <QRCode qrCode={restaurant.qrCode} ref={qrCodeRef} />
+                  <Flex justify="center">
+                    <Button onClick={handlePrint} variantColor="teal">
+                      Imprimer le QR code
+                    </Button>
+                  </Flex>
+                </Box>
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose}>Close</Button>
@@ -228,6 +271,7 @@ export const ContactList = ({
             textAlign="center"
             marginTop="1em"
             marginBottom="0.5em"
+            fontSize="1.2em"
           >
             Client des 14 derniers jours :
           </Heading>
@@ -261,22 +305,32 @@ export const ContactList = ({
               </Flex>
             </Box>
           ) : (
-            <Flex
-              as={List}
-              alignItems="center"
-              direction="column"
-              spacing={3}
+            <Grid
+              templateColumns="repeat(4, 1fr)"
               marginTop="1em"
+              fontSize={["0.8em", "0.8em", "1em"]}
             >
+              <HeadCell name="Date" />
+              <HeadCell name="Prénom" />
+              <HeadCell name="Nom" />
+              <HeadCell name="Téléphone" />
               {contacts
                 .sort((a, b) => b.date - a.date)
-                .map(({ date, contact }, index) => (
-                  <ListItem key={`${index}${contact.phoneNumber}`}>
-                    {format(date, "dd/MM/yyyy HH:mm")} - {contact.firstName}{" "}
-                    {contact.lastName} - {contact.email} - {contact.phoneNumber}
-                  </ListItem>
+                .map((contact, index) => (
+                  <React.Fragment key={`${index}${contact.phoneNumber}`}>
+                    <RowCell data={contact.date} isEven={index % 2 === 0} />
+                    <RowCell
+                      data={contact.firstName}
+                      isEven={index % 2 === 0}
+                    />
+                    <RowCell data={contact.lastName} isEven={index % 2 === 0} />
+                    <RowCell
+                      data={contact.phoneNumber}
+                      isEven={index % 2 === 0}
+                    />
+                  </React.Fragment>
                 ))}
-            </Flex>
+            </Grid>
           )}
         </>
       )}
@@ -285,7 +339,6 @@ export const ContactList = ({
 };
 
 ContactList.propTypes = {
-  addContact: PropTypes.func.isRequired,
   getContacts: PropTypes.func.isRequired,
   restorePrivateKey: PropTypes.func.isRequired,
   restaurantRepository: PropTypes.shape({

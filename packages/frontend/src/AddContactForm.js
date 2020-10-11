@@ -11,6 +11,12 @@ import {
   Input,
   Button,
 } from "@chakra-ui/core";
+import { useLocation, useHistory } from "react-router-dom";
+import { getAnalytics } from "./adapters/shared/firebase";
+
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
 
 const validateForm = (values) => {
   const errors = {};
@@ -19,11 +25,6 @@ const validateForm = (values) => {
   }
   if (!values.lastName) {
     errors.lastName = "Champs requis";
-  }
-  if (!values.email) {
-    errors.email = "Champ requis";
-  } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
-    errors.email = "Adresse e-mail invalide";
   }
   if (!values.phoneNumber) {
     errors.phoneNumber = "Champs requis";
@@ -40,13 +41,11 @@ const sendContactInformation = ({
   if (saveInputs) {
     localStorage.setItem("firstName", values.firstName);
     localStorage.setItem("lastName", values.lastName);
-    localStorage.setItem("email", values.email);
     localStorage.setItem("phoneNumber", values.phoneNumber);
   }
   const contact = {
     firstName: values.firstName,
     lastName: values.lastName,
-    email: values.email,
     phoneNumber: values.phoneNumber,
   };
   const now = new Date();
@@ -54,6 +53,9 @@ const sendContactInformation = ({
     restaurantId,
     contactInformation: contact,
     now,
+  });
+  getAnalytics().logEvent("contact_added", {
+    restaurantId,
   });
   setSubmitting(false);
   notifyContactSent({
@@ -64,20 +66,20 @@ const sendContactInformation = ({
 
 export const AddContactForm = ({
   restaurantId,
+  restaurantName,
   addContact,
-  onContactAdded,
   saveInputs = true,
 }) => {
+  const query = useQuery();
+  const history = useHistory();
   const [contactSent, setContactSent] = useState(false);
-  const notifyContactSent = useCallback(
-    (contact) => {
-      setContactSent(true);
-      if (onContactAdded) {
-        onContactAdded(contact);
-      }
-    },
-    [setContactSent, onContactAdded]
-  );
+  const notifyContactSent = useCallback(() => {
+    setContactSent(true);
+    console.log({ redirectToDashboard: query.get("redirectToDashboard") });
+    if (query.get("redirectToDashboard") !== null) {
+      history.push("/");
+    }
+  }, [setContactSent, query, history]);
   return contactSent ? (
     <Box bg="#48BB78" p={4} color="white">
       Merci ! Coordonnées bien envoyées.
@@ -88,7 +90,9 @@ export const AddContactForm = ({
         firstName: saveInputs ? localStorage.getItem("firstName") || "" : "",
         lastName: saveInputs ? localStorage.getItem("lastName") || "" : "",
         email: saveInputs ? localStorage.getItem("email") || "" : "",
-        phoneNumber: saveInputs ? localStorage.getItem("email") || "" : "",
+        phoneNumber: saveInputs
+          ? localStorage.getItem("phoneNumber") || ""
+          : "",
       }}
       validate={validateForm}
       onSubmit={sendContactInformation({
@@ -141,22 +145,6 @@ export const AddContactForm = ({
           </FormControl>
           <FormControl
             isRequired
-            isInvalid={errors.email && touched.email}
-            paddingBottom="1em"
-          >
-            <FormLabel htmlFor="email">E-mail</FormLabel>
-            <Input
-              type="email"
-              id="email"
-              name="email"
-              aria-describedby="email-helper-text"
-              value={values.email}
-              onChange={handleChange}
-            />
-            <FormErrorMessage>{errors.email}</FormErrorMessage>
-          </FormControl>
-          <FormControl
-            isRequired
             isInvalid={errors.phoneNumber && touched.phoneNumber}
             paddingBottom="1em"
           >
@@ -171,27 +159,6 @@ export const AddContactForm = ({
             />
             <FormErrorMessage>{errors.phoneNumber}</FormErrorMessage>
           </FormControl>
-          <FormHelperText>
-            Les informations recueillies sur ce formulaire sont enregistrées et
-            utilisées uniquement par notre établissement. Conformément aux
-            obligations prévues dans le protocole sanitaire défini par arrêté
-            préfectoral, vos données seront uniquement utilisées pour faciliter
-            la recherche des « cas contacts » par les autorités sanitaires, et
-            ne seront pas réutilisées à d’autres fins. En cas de contamination
-            de l’un des clients au moment de votre présence, ces informations
-            pourront être communiquées aux autorités sanitaires compétentes
-            (agents des CPAM, de l’assurance maladie et/ou de l’agence régionale
-            de santé), afin de vous contacter et de vous indiquer le protocole
-            sanitaire à suivre. Vos données seront conservées pendant 14 jours à
-            compter de leur collecte, et seront supprimées à l’issue de ce
-            délai. Vous pouvez accéder aux données vous concernant, les
-            rectifier ou exercer votre droit à la limitation du traitement de
-            vos données. Pour exercer ces droits ou pour toute question sur le
-            traitement de vos données, vous pouvez contacter notre
-            établissement. Si vous estimez, après nous avoir contactés, que vos
-            droits Informatique et Libertés ne sont pas respectés, vous pouvez
-            adresser une réclamation à la CNIL.
-          </FormHelperText>
           <Flex justify="center">
             <Button
               mt={4}
@@ -202,6 +169,28 @@ export const AddContactForm = ({
               Envoyer les coordonnées
             </Button>
           </Flex>
+          <FormHelperText marginTop="1em">
+            Les informations recueillies sur ce formulaire sont enregistrées et
+            utilisées uniquement par l'établissement{" "}
+            <strong>"{restaurantName}"</strong>. Conformément aux obligations
+            prévues dans le protocole sanitaire défini par arrêté préfectoral,
+            vos données seront uniquement utilisées pour faciliter la recherche
+            des « cas contacts » par les autorités sanitaires, et ne seront pas
+            réutilisées à d’autres fins. En cas de contamination de l’un des
+            clients au moment de votre présence, ces informations pourront être
+            communiquées aux autorités sanitaires compétentes (agents des CPAM,
+            de l’assurance maladie et/ou de l’agence régionale de santé), afin
+            de vous contacter et de vous indiquer le protocole sanitaire à
+            suivre. Vos données seront conservées pendant 14 jours à compter de
+            leur collecte, et seront supprimées à l’issue de ce délai. Vous
+            pouvez accéder aux données vous concernant, les rectifier ou exercer
+            votre droit à la limitation du traitement de vos données. Pour
+            exercer ces droits ou pour toute question sur le traitement de vos
+            données, vous pouvez contacter l'établissement{" "}
+            <strong>"{restaurantName}"</strong>. Si vous estimez, après les
+            avoir contacté, que vos droits Informatique et Libertés ne sont pas
+            respectés, vous pouvez adresser une réclamation à la CNIL.
+          </FormHelperText>
         </form>
       )}
     </Formik>
@@ -210,6 +199,7 @@ export const AddContactForm = ({
 
 AddContactForm.propTypes = {
   restaurantId: PropTypes.string.isRequired,
+  restaurantName: PropTypes.string.isRequired,
   addContact: PropTypes.func.isRequired,
   onContactAdded: PropTypes.func,
   saveInputs: PropTypes.bool,

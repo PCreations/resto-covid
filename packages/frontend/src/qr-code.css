@@ -1,0 +1,9 @@
+@media print {
+  @page {
+    size: 7cm;
+  }
+  body,
+  html {
+    width: 7cm;
+  }
+}

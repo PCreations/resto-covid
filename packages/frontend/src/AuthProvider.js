@@ -4,6 +4,7 @@ import { AuthStateContext, AuthSetStateContext } from "./AuthContext";
 export const AuthProvider = ({ children, authenticationGateway }) => {
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
+    isAuthenticating: true,
     currentRestaurantUser: {
       id: "",
       name: "",
@@ -14,8 +15,9 @@ export const AuthProvider = ({ children, authenticationGateway }) => {
   useEffect(() => {
     authenticationGateway.onRestaurantSignedIn((currentRestaurantUser) => {
       setAuthState({
-        isAuthenticated: true,
-        currentRestaurantUser,
+        isAuthenticated: currentRestaurantUser !== null,
+        isAuthenticating: false,
+        currentRestaurantUser: currentRestaurantUser || {},
       });
     });
   }, [setAuthState, authenticationGateway]);

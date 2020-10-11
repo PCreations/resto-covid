@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ThemeProvider,
   CSSReset,
@@ -6,13 +6,11 @@ import {
   Box,
   Heading,
   Spinner,
-  Text,
 } from "@chakra-ui/core";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link,
   useParams,
 } from "react-router-dom";
 import { createFirebaseAuthenticationGateway } from "./adapters/authentication-gateway";
@@ -26,10 +24,9 @@ import { createRestorePrivateKey } from "./use-cases/restore-private-key";
 import { createSignUp } from "./use-cases/sign-up";
 import { createGetContacts } from "./use-cases/get-contacts";
 import { createAddContact } from "./use-cases/add-contact";
-import { AuthStateContext } from "./AuthContext";
 import { AddContactForm } from "./AddContactForm";
+import { RestaurantDashboard } from "./RestaurantDashboard";
 import { SignUpForm } from "./SignUpForm";
-import { ContactList } from "./ContactList";
 import { AuthProvider } from "./AuthProvider";
 import { SignInForm } from "./SignInForm";
 
@@ -72,63 +69,40 @@ const App = () => {
       <ThemeProvider>
         <CSSReset />
         <Flex align="center" justify="center" padding="1em">
-          <Box width={["100%", "75%", "50%"]}>
-            <Router>
-              <Switch>
-                <Route exact path="/">
-                  <RestaurantDashboard />
-                </Route>
-                <Route exact path="/signup">
-                  <SignUpForm
-                    signUp={signUp}
-                    backupPrivateKey={backupPrivateKey}
-                    getPrivateKey={localDataRepository.getPrivateKey}
-                  />
-                </Route>
-                <Route exact path="/signin">
-                  <SignInForm signIn={signIn} />
-                </Route>
-                <Route path="/form/:restaurantId">
-                  <Form />
-                </Route>
-                <Route path="*">
-                  <div>404</div>
-                </Route>
-              </Switch>
-            </Router>
-          </Box>
+          <Router>
+            <Switch>
+              <Route exact path="/">
+                <RestaurantDashboard
+                  localDataRepository={localDataRepository}
+                  restaurantRepository={restaurantRepository}
+                  addContact={addContact}
+                  getContacts={getContacts}
+                  signUp={signUp}
+                  restorePrivateKey={restorePrivateKey}
+                  backupPrivateKey={backupPrivateKey}
+                />
+              </Route>
+              <Route exact path="/signup">
+                <SignUpForm
+                  signUp={signUp}
+                  backupPrivateKey={backupPrivateKey}
+                  getPrivateKey={localDataRepository.getPrivateKey}
+                />
+              </Route>
+              <Route exact path="/signin">
+                <SignInForm signIn={signIn} />
+              </Route>
+              <Route path="/form/:restaurantId">
+                <Form />
+              </Route>
+              <Route path="*">
+                <div>404</div>
+              </Route>
+            </Switch>
+          </Router>
         </Flex>
       </ThemeProvider>
     </AuthProvider>
-  );
-};
-
-const RestaurantDashboard = () => {
-  const { isAuthenticated } = useContext(AuthStateContext);
-
-  if (isAuthenticated) {
-    return (
-      <Box>
-        <ContactList
-          addContact={addContact}
-          getContacts={getContacts}
-          restorePrivateKey={restorePrivateKey}
-          restaurantRepository={restaurantRepository}
-        />
-      </Box>
-    );
-  }
-  return (
-    <Box>
-      <Heading textAlign="center">Resto Covid</Heading>
-      <Text>
-        Si vous avez déjà un compte : <Link to="/signin">connectez-vous</Link>
-      </Text>
-      <SignUpForm
-        signUp={signUp}
-        getPrivateKey={localDataRepository.getPrivateKey}
-      />
-    </Box>
   );
 };
 
@@ -147,7 +121,11 @@ const Form = () => {
       <Heading textAlign="center" as="h1" size="md" marginBottom="1.5em">
         {restaurantName}
       </Heading>
-      <AddContactForm restaurantId={restaurantId} addContact={addContact} />
+      <AddContactForm
+        restaurantName={restaurantName}
+        restaurantId={restaurantId}
+        addContact={addContact}
+      />
     </Box>
   ) : (
     <Spinner />
