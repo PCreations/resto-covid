@@ -17,13 +17,23 @@ export const createFirebaseRestaurantRepository = () => {
         .doc(restaurantId)
         .get()
         .then((doc) => {
-          const { id, name, publicKey, qrCode } = doc.data();
-          return {
-            id,
-            name,
-            publicKey,
-            qrCode,
-          };
+          if (doc.exists) {
+            const {
+              id,
+              name,
+              publicKey,
+              qrCode,
+              privateKeyBackup,
+            } = doc.data();
+            return {
+              id,
+              name,
+              publicKey,
+              qrCode,
+              privateKeyBackup,
+            };
+          }
+          throw new Error(`Restaurant ${restaurantId} not found`);
         });
     },
     async addContact({ restaurantId, encryptedContact, now }) {

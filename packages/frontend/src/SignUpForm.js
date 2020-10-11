@@ -1,3 +1,4 @@
+import faker from "faker";
 import React, { useCallback, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Formik } from "formik";
@@ -11,6 +12,7 @@ import {
   FormHelperText,
   Flex,
   Input,
+  Textarea,
   Button,
   Spinner,
   Text,
@@ -44,15 +46,19 @@ const validateForm = (values) => {
   return errors;
 };
 
-const doSignUp = ({ signUp, notifySignUpSuccess }) => async (
+const doSignUp = ({ signUp, backupPrivateKey, notifySignUpSuccess }) => async (
   values,
   { setSubmitting, setStatus }
 ) => {
   try {
-    await signUp({
+    const { id: restaurantId } = await signUp({
       restaurantName: values.name,
       email: values.email,
       password: values.password,
+    });
+    await backupPrivateKey({
+      restaurantId,
+      words: values.words,
     });
     notifySignUpSuccess();
   } catch (err) {
@@ -64,7 +70,7 @@ const doSignUp = ({ signUp, notifySignUpSuccess }) => async (
   }
 };
 
-export const SignUpForm = ({ signUp, getPrivateKey }) => {
+export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
   const [signupHasSucceed, setSignupHasSucceed] = useState(false);
   const [privateKey, setPrivateKey] = useState("loading");
   const [
@@ -178,9 +184,14 @@ export const SignUpForm = ({ signUp, getPrivateKey }) => {
         email: "",
         password: "",
         passwordConfirmation: "",
+        words: faker.random.words(10).toLowerCase(),
       }}
       validate={validateForm}
-      onSubmit={doSignUp({ signUp, notifySignUpSuccess })}
+      onSubmit={doSignUp({
+        signUp,
+        backupPrivateKey,
+        notifySignUpSuccess,
+      })}
     >
       {({
         values,
@@ -193,8 +204,8 @@ export const SignUpForm = ({ signUp, getPrivateKey }) => {
       }) => (
         <form onSubmit={handleSubmit}>
           {status?.error && (
-            <Box bg="red" color="white" p={4}>
-              Erreur : {status.error}
+            <Box bg="red.500" color="white" p={4}>
+              <Text>Erreur : {status.error}</Text>
             </Box>
           )}
           <FormControl
@@ -261,6 +272,18 @@ export const SignUpForm = ({ signUp, getPrivateKey }) => {
             />
             <FormErrorMessage>{errors.passwordConfirmation}</FormErrorMessage>
           </FormControl>
+          <FormControl>
+            <FormLabel htmlFor="words" color="red">
+              Sauvegarder précieusement cette liste de mots, elle vous permettra
+              de vous connecter depuis d'autres appareils.
+            </FormLabel>
+            <Textarea
+              id="words"
+              name="words"
+              value={values.words}
+              color="red"
+            />
+          </FormControl>
           <Flex justify="center">
             <Button
               mt={4}
@@ -279,5 +302,6 @@ export const SignUpForm = ({ signUp, getPrivateKey }) => {
 
 SignUpForm.propTypes = {
   signUp: PropTypes.func.isRequired,
+  backupPrivateKey: PropTypes.func.isRequired,
   getPrivateKey: PropTypes.func.isRequired,
 };

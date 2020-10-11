@@ -32,33 +32,52 @@ const validateForm = (values) => {
 };
 
 const sendContactInformation = ({
+  saveInputs,
   addContact,
   restaurantId,
   notifyContactSent,
 }) => async (values, { setSubmitting }) => {
-  localStorage.setItem("firstName", values.firstName);
-  localStorage.setItem("lastName", values.lastName);
-  localStorage.setItem("email", values.email);
-  localStorage.setItem("phoneNumber", values.phoneNumber);
+  if (saveInputs) {
+    localStorage.setItem("firstName", values.firstName);
+    localStorage.setItem("lastName", values.lastName);
+    localStorage.setItem("email", values.email);
+    localStorage.setItem("phoneNumber", values.phoneNumber);
+  }
+  const contact = {
+    firstName: values.firstName,
+    lastName: values.lastName,
+    email: values.email,
+    phoneNumber: values.phoneNumber,
+  };
+  const now = new Date();
   await addContact({
     restaurantId,
-    contactInformation: {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      phoneNumber: values.phoneNumber,
-    },
-    now: new Date(),
+    contactInformation: contact,
+    now,
   });
   setSubmitting(false);
-  notifyContactSent();
+  notifyContactSent({
+    ...contact,
+    date: now,
+  });
 };
 
-export const AddContactForm = ({ restaurantId, addContact }) => {
+export const AddContactForm = ({
+  restaurantId,
+  addContact,
+  onContactAdded,
+  saveInputs = true,
+}) => {
   const [contactSent, setContactSent] = useState(false);
-  const notifyContactSent = useCallback(() => setContactSent(true), [
-    setContactSent,
-  ]);
+  const notifyContactSent = useCallback(
+    (contact) => {
+      setContactSent(true);
+      if (onContactAdded) {
+        onContactAdded(contact);
+      }
+    },
+    [setContactSent, onContactAdded]
+  );
   return contactSent ? (
     <Box bg="#48BB78" p={4} color="white">
       Merci ! Coordonnées bien envoyées.
@@ -66,13 +85,14 @@ export const AddContactForm = ({ restaurantId, addContact }) => {
   ) : (
     <Formik
       initialValues={{
-        firstName: localStorage.getItem("firstName") || "",
-        lastName: localStorage.getItem("lastName") || "",
-        email: localStorage.getItem("email") || "",
-        phoneNumber: localStorage.getItem("phoneNumber") || "",
+        firstName: saveInputs ? localStorage.getItem("firstName") || "" : "",
+        lastName: saveInputs ? localStorage.getItem("lastName") || "" : "",
+        email: saveInputs ? localStorage.getItem("email") || "" : "",
+        phoneNumber: saveInputs ? localStorage.getItem("email") || "" : "",
       }}
       validate={validateForm}
       onSubmit={sendContactInformation({
+        saveInputs,
         addContact,
         restaurantId,
         notifyContactSent,
@@ -102,9 +122,6 @@ export const AddContactForm = ({ restaurantId, addContact }) => {
               onChange={handleChange}
             />
             <FormErrorMessage>{errors.firstName}</FormErrorMessage>
-            <FormHelperText id="first-name-helper-text">
-              Seul le restaurant aura accès à votre prénom.
-            </FormHelperText>
           </FormControl>
           <FormControl
             isRequired
@@ -121,9 +138,6 @@ export const AddContactForm = ({ restaurantId, addContact }) => {
               onChange={handleChange}
             />
             <FormErrorMessage>{errors.lastName}</FormErrorMessage>
-            <FormHelperText id="first-name-helper-text">
-              Seul le restaurant aura accès à votre nom.
-            </FormHelperText>
           </FormControl>
           <FormControl
             isRequired
@@ -140,9 +154,6 @@ export const AddContactForm = ({ restaurantId, addContact }) => {
               onChange={handleChange}
             />
             <FormErrorMessage>{errors.email}</FormErrorMessage>
-            <FormHelperText id="email-helper-text">
-              Seul le restaurant aura accès à votre adresse e-mail.
-            </FormHelperText>
           </FormControl>
           <FormControl
             isRequired
@@ -159,10 +170,28 @@ export const AddContactForm = ({ restaurantId, addContact }) => {
               onChange={handleChange}
             />
             <FormErrorMessage>{errors.phoneNumber}</FormErrorMessage>
-            <FormHelperText id="first-name-helper-text">
-              Seul le restaurant aura accès à votre numéro de téléphone.
-            </FormHelperText>
           </FormControl>
+          <FormHelperText>
+            Les informations recueillies sur ce formulaire sont enregistrées et
+            utilisées uniquement par notre établissement. Conformément aux
+            obligations prévues dans le protocole sanitaire défini par arrêté
+            préfectoral, vos données seront uniquement utilisées pour faciliter
+            la recherche des « cas contacts » par les autorités sanitaires, et
+            ne seront pas réutilisées à d’autres fins. En cas de contamination
+            de l’un des clients au moment de votre présence, ces informations
+            pourront être communiquées aux autorités sanitaires compétentes
+            (agents des CPAM, de l’assurance maladie et/ou de l’agence régionale
+            de santé), afin de vous contacter et de vous indiquer le protocole
+            sanitaire à suivre. Vos données seront conservées pendant 14 jours à
+            compter de leur collecte, et seront supprimées à l’issue de ce
+            délai. Vous pouvez accéder aux données vous concernant, les
+            rectifier ou exercer votre droit à la limitation du traitement de
+            vos données. Pour exercer ces droits ou pour toute question sur le
+            traitement de vos données, vous pouvez contacter notre
+            établissement. Si vous estimez, après nous avoir contactés, que vos
+            droits Informatique et Libertés ne sont pas respectés, vous pouvez
+            adresser une réclamation à la CNIL.
+          </FormHelperText>
           <Flex justify="center">
             <Button
               mt={4}
@@ -182,4 +211,6 @@ export const AddContactForm = ({ restaurantId, addContact }) => {
 AddContactForm.propTypes = {
   restaurantId: PropTypes.string.isRequired,
   addContact: PropTypes.func.isRequired,
+  onContactAdded: PropTypes.func,
+  saveInputs: PropTypes.bool,
 };

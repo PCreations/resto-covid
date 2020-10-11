@@ -7,14 +7,13 @@ import {
   Heading,
   Spinner,
   Text,
-  Image,
 } from "@chakra-ui/core";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  useParams,
   Link,
+  useParams,
 } from "react-router-dom";
 import { createFirebaseAuthenticationGateway } from "./adapters/authentication-gateway";
 import { createFirebaseRestaurantRepository } from "./adapters/restaurant-repository";
@@ -22,14 +21,17 @@ import { createLocalStorageDataRepository } from "./adapters/local-data-reposito
 import { createSealedBoxEncrypter } from "./adapters/encrypter";
 import { createQRCodeGenerator } from "./adapters/qr-code-generator";
 import { createSignIn } from "./use-cases/sign-in";
+import { createBackupPrivateKey } from "./use-cases/backup-private-key";
+import { createRestorePrivateKey } from "./use-cases/restore-private-key";
 import { createSignUp } from "./use-cases/sign-up";
 import { createGetContacts } from "./use-cases/get-contacts";
 import { createAddContact } from "./use-cases/add-contact";
 import { AuthStateContext } from "./AuthContext";
 import { AddContactForm } from "./AddContactForm";
 import { SignUpForm } from "./SignUpForm";
-import { SignInForm } from "./SignInForm";
+import { ContactList } from "./ContactList";
 import { AuthProvider } from "./AuthProvider";
+import { SignInForm } from "./SignInForm";
 
 const authenticationGateway = createFirebaseAuthenticationGateway();
 const restaurantRepository = createFirebaseRestaurantRepository();
@@ -42,6 +44,16 @@ const signUp = createSignUp({
   encrypter,
   localDataRepository,
   qrCodeGenerator,
+});
+const backupPrivateKey = createBackupPrivateKey({
+  restaurantRepository,
+  localDataRepository,
+  encrypter,
+});
+const restorePrivateKey = createRestorePrivateKey({
+  localDataRepository,
+  restaurantRepository,
+  encrypter,
 });
 const signIn = createSignIn({ authenticationGateway });
 const getContacts = createGetContacts({
@@ -69,8 +81,12 @@ const App = () => {
                 <Route exact path="/signup">
                   <SignUpForm
                     signUp={signUp}
+                    backupPrivateKey={backupPrivateKey}
                     getPrivateKey={localDataRepository.getPrivateKey}
                   />
+                </Route>
+                <Route exact path="/signin">
+                  <SignInForm signIn={signIn} />
                 </Route>
                 <Route path="/form/:restaurantId">
                   <Form />
@@ -93,60 +109,25 @@ const RestaurantDashboard = () => {
   if (isAuthenticated) {
     return (
       <Box>
-        <ContactList />
+        <ContactList
+          addContact={addContact}
+          getContacts={getContacts}
+          restorePrivateKey={restorePrivateKey}
+          restaurantRepository={restaurantRepository}
+        />
       </Box>
     );
   }
   return (
-    <div>
-      <Heading textAlign="center">Resto Covid</Heading>
-      <SignInForm signIn={signIn} />
-      <Text textAlign="center" marginTop="1em">
-        <Link to="/signup">
-          Pas de compte ? Enregistrez votre restaurant en 30 secondes
-        </Link>
-      </Text>
-    </div>
-  );
-};
-
-const ContactList = () => {
-  const [contacts, setContacts] = useState([]);
-  const [restaurant, setRestaurant] = useState();
-
-  useEffect(() => {
-    const retrieveContacts = async () => {
-      const { id: restaurantId } = authenticationGateway.currentRestaurantUser;
-      const contacts = await getContacts({
-        restaurantId,
-        today: new Date(),
-      });
-      setContacts(contacts);
-    };
-    retrieveContacts();
-  }, [setContacts]);
-
-  useEffect(() => {
-    const retrieveRestaurant = async () => {
-      const { id: restaurantId } = authenticationGateway.currentRestaurantUser;
-      const restaurant = await restaurantRepository.get({ restaurantId });
-      console.log({ restaurant });
-      setRestaurant(restaurant);
-    };
-    retrieveRestaurant();
-  }, [setRestaurant]);
-
-  return (
     <Box>
-      {restaurant ? (
-        <Box>
-          <Heading>Dashboard : {restaurant.name}</Heading>
-          <Image src={restaurant.qrCode} />
-        </Box>
-      ) : (
-        <Spinner />
-      )}
-      {contacts ? JSON.stringify(contacts, null, 2) : <Spinner />}
+      <Heading textAlign="center">Resto Covid</Heading>
+      <Text>
+        Si vous avez déjà un compte : <Link to="/signin">connectez-vous</Link>
+      </Text>
+      <SignUpForm
+        signUp={signUp}
+        getPrivateKey={localDataRepository.getPrivateKey}
+      />
     </Box>
   );
 };

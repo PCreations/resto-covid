@@ -16,12 +16,18 @@ export const createIdentityEncrypter = () => {
         [`${publicKey}${lastGeneratedPrivateKey}`]: true,
       });
     },
+    encryptPrivateKeyBackup({ words, privateKey }) {
+      return `${words}${privateKey}`;
+    },
     decrypt({ publicKey, privateKey, data }) {
       const {
         [`${publicKey}${privateKey}`]: _,
         ...theDecryptedData
       } = JSON.parse(data);
       return theDecryptedData;
+    },
+    decryptPrivateKeyBackup({ words, privateKeyBackup }) {
+      return privateKeyBackup.replace(words, "");
     },
     getLastGeneratedKeyPair() {
       return {

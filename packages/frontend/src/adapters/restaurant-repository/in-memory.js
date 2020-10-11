@@ -13,12 +13,15 @@ export const createInMemoryRestaurantRepository = (restaurantsById = {}) => {
       });
     },
     async get({ restaurantId }) {
-      const { id, name, publicKey, qrCode } = restaurants[restaurantId];
+      const { id, name, publicKey, qrCode, privateKeyBackup } = restaurants[
+        restaurantId
+      ];
       return {
         id,
         name,
         publicKey,
         qrCode,
+        privateKeyBackup,
       };
     },
     async getContacts({ restaurantId, today = new Date() }) {
