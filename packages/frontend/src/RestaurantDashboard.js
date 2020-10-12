@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
 import PropTypes from "prop-types";
 import { useHistory } from "react-router-dom";
-import { Spinner, Box, Heading, Text, Button } from "@chakra-ui/core";
+import { Spinner, Box, Image, Flex, Text, Button } from "@chakra-ui/core";
 import { AuthStateContext } from "./AuthContext";
 import { SignUpForm } from "./SignUpForm";
 import { ContactList } from "./ContactList";
+import logo from "./logo.png";
 
 export const RestaurantDashboard = ({
   addContact,
@@ -35,7 +36,9 @@ export const RestaurantDashboard = ({
   }
   return (
     <Box>
-      <Heading textAlign="center">Resto Covid</Heading>
+      <Flex justifyContent="center">
+        <Image src={logo} alt="Resto Covid"></Image>
+      </Flex>
       <Box bg="teal.100" p={4} marginBottom={"1em"} marginTop={"1em"}>
         <Text textAlign="center">
           Si vous avez déjà un compte :{" "}
