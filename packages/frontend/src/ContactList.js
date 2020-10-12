@@ -21,6 +21,7 @@ import {
   Spinner,
   Image,
   Text,
+  Link,
   Textarea,
   FormControl,
   FormErrorMessage,
@@ -217,11 +218,14 @@ export const ContactList = ({
     ]),
   ];
 
+  const getFormLink = ({ restaurantId }) =>
+    `${process.env.REACT_APP_BASE_URL}/form/${restaurantId}`;
+
   return (
     <Box>
       {restaurant ? (
         <Flex alignItems="center" direction="column">
-          <Flex direction="column">
+          <Flex direction="column" maxW="90%">
             <Heading
               marginBottom="0.5em"
               textAlign="center"
@@ -230,6 +234,15 @@ export const ContactList = ({
             >
               {restaurant.name}
             </Heading>
+            <Text textAlign="center" marginBottom="1em">
+              Lien vers le formulaire d'ajout de contact :{" "}
+              <Link
+                href={getFormLink({ restaurantId: restaurant.id })}
+                title="Formulaire d'ajout de contact"
+              >
+                {getFormLink({ restaurantId: restaurant.id })}
+              </Link>
+            </Text>
             <Button
               marginBottom="1em"
               leftIcon={AiOutlineQrcode}
@@ -238,7 +251,7 @@ export const ContactList = ({
               onClick={openQrCodeModal}
               size="lg"
             >
-              QR Code à mettre à disposition de vos clients
+              Afficher le QR Code
             </Button>
             {needToRestorePrivateKey === false && (
               <>

@@ -114,7 +114,7 @@ export const AddContactForm = ({
             isInvalid={errors.firstName && touched.firstName}
             paddingBottom="1em"
           >
-            <FormLabel htmlFor="first-name">Prénom</FormLabel>
+            <FormLabel htmlFor="first-name">Prénom / First name</FormLabel>
             <Input
               type="text"
               id="first-name"
@@ -130,7 +130,7 @@ export const AddContactForm = ({
             isInvalid={errors.lastName && touched.lastName}
             paddingBottom="1em"
           >
-            <FormLabel htmlFor="last-name">Nom</FormLabel>
+            <FormLabel htmlFor="last-name">Nom / Last name</FormLabel>
             <Input
               type="text"
               id="last-name"
@@ -146,7 +146,9 @@ export const AddContactForm = ({
             isInvalid={errors.phoneNumber && touched.phoneNumber}
             paddingBottom="1em"
           >
-            <FormLabel htmlFor="phone-number">Numéro de téléphone</FormLabel>
+            <FormLabel htmlFor="phone-number">
+              Numéro de téléphone / Phone number
+            </FormLabel>
             <Input
               type="tel"
               id="phone-number"
@@ -164,7 +166,7 @@ export const AddContactForm = ({
               isLoading={isSubmitting}
               type="submit"
             >
-              Envoyer les coordonnées
+              Envoyer les coordonnées / Send
             </Button>
           </Flex>
           <FormHelperText marginTop="1em">
