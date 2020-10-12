@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
+import ReactDOM from "react-dom";
 import { useHistory } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useReactToPrint } from "react-to-print";
+import { CSVLink } from "react-csv";
 import {
   useDisclosure,
   Box,
   Flex,
   Heading,
   Button,
+  useToast,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -27,6 +30,7 @@ import { format } from "date-fns";
 import { AiOutlineQrcode, AiOutlineExport } from "react-icons/ai";
 import { MdPersonAdd } from "react-icons/md";
 import { AuthStateContext } from "./AuthContext";
+import { getAnalytics } from "./adapters/shared/firebase";
 import "./qr-code.css";
 
 const formatContact = ({ date, contact }) => ({
@@ -51,6 +55,10 @@ const retrieveContacts = async ({
     setNeedToRestorePrivateKey(false);
     setContacts(formattedContacts);
   } catch (err) {
+    console.error("Error while retrieving contacts", {
+      privateKey: localStorage.getItem("privateKey"),
+      err,
+    });
     setNeedToRestorePrivateKey(true);
   }
 };
@@ -97,6 +105,7 @@ export const ContactList = ({
   const [backupWords, setBackupWords] = useState();
   const [isRetrievingPrivateKey, setIsRetrievingPrivateKey] = useState(false);
   const [retrievePrivateKeyError, setRetrievePrivateKeyError] = useState(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (restaurant) {
@@ -175,16 +184,39 @@ export const ContactList = ({
   };
 
   const qrCodeRef = useRef();
+
+  const exportCsvRef = useRef();
+
   const handlePrint = useReactToPrint({
     content: () => qrCodeRef.current,
   });
 
-  const mailBody = (contacts || [])
-    .map(
-      (contact) =>
-        `${contact.date} - ${contact.firstName} ${contact.lastName} - ${contact.phoneNumber}`
-    )
-    .join("\n");
+  const handleExportClick = () => {
+    getAnalytics().logEvent("contacts_exported", {
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+      contactsCount: (contacts || []).length,
+    });
+    ReactDOM.findDOMNode(exportCsvRef.current).click();
+    toast({
+      title: "Fichiers téléchargé",
+      description: "Regardez dans votre dossier téléchargement",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    });
+  };
+
+  const csvData = [
+    ["Date", "Prénom", "Nom", "Téléphone"],
+    ...(contacts || []).map(({ date, firstName, lastName, phoneNumber }) => [
+      date,
+      firstName,
+      lastName,
+      phoneNumber,
+    ]),
+  ];
+
   return (
     <Box>
       {restaurant ? (
@@ -199,13 +231,14 @@ export const ContactList = ({
               {restaurant.name}
             </Heading>
             <Button
-              marginBottom="0.5em"
+              marginBottom="1em"
               leftIcon={AiOutlineQrcode}
               variantColor="teal"
               variant="solid"
               onClick={openQrCodeModal}
+              size="lg"
             >
-              Afficher le QR Code
+              QR Code à mettre à disposition de vos clients
             </Button>
             {needToRestorePrivateKey === false && (
               <>
@@ -215,6 +248,8 @@ export const ContactList = ({
                   color="white"
                   variant="solid"
                   onClick={redirectToAddContactForm}
+                  size="lg"
+                  marginBottom="1em"
                 >
                   Ajouter un client
                 </Button>
@@ -223,13 +258,20 @@ export const ContactList = ({
                   variantColor="blue"
                   color="white"
                   variant="solid"
-                  marginTop="0.5em"
-                  onClick={() =>
-                    (window.location = `mailto:?body=${encodeURI(mailBody)}`)
-                  }
+                  onClick={handleExportClick}
+                  size="lg"
                 >
-                  Exporter le fichier
+                  Exporter les contacts
                 </Button>
+                <CSVLink
+                  ref={exportCsvRef}
+                  style={{ display: "none" }}
+                  data={csvData}
+                  filename={"resto-covid.csv"}
+                  target="_blank"
+                >
+                  Exporter les contacts
+                </CSVLink>
               </>
             )}
           </Flex>

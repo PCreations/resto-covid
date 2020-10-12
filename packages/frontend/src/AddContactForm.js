@@ -74,7 +74,6 @@ export const AddContactForm = ({
   const [contactSent, setContactSent] = useState(false);
   const notifyContactSent = useCallback(() => {
     setContactSent(true);
-    console.log({ redirectToDashboard: query.get("redirectToDashboard") });
     if (query.get("redirectToDashboard") !== null) {
       history.push("/");
     }
