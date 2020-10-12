@@ -7,6 +7,8 @@ import {
   Heading,
   Spinner,
 } from "@chakra-ui/core";
+import * as Sentry from "@sentry/react";
+import { Integrations } from "@sentry/tracing";
 import {
   BrowserRouter as Router,
   Switch,
@@ -29,6 +31,13 @@ import { RestaurantDashboard } from "./RestaurantDashboard";
 import { SignUpForm } from "./SignUpForm";
 import { AuthProvider } from "./AuthProvider";
 import { SignInForm } from "./SignInForm";
+
+Sentry.init({
+  dsn:
+    "https://b44818e4fa3f4953996f3d3721f4a458@o377168.ingest.sentry.io/5461082",
+  integrations: [new Integrations.BrowserTracing()],
+  tracesSampleRate: 1.0,
+});
 
 const authenticationGateway = createFirebaseAuthenticationGateway();
 const restaurantRepository = createFirebaseRestaurantRepository();
