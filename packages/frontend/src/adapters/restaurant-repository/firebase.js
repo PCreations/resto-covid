@@ -24,6 +24,9 @@ export const createFirebaseRestaurantRepository = () => {
               publicKey,
               qrCode,
               privateKeyBackup,
+              address,
+              postalCode,
+              city,
             } = doc.data();
             return {
               id,
@@ -31,6 +34,9 @@ export const createFirebaseRestaurantRepository = () => {
               publicKey,
               qrCode,
               privateKeyBackup,
+              address,
+              postalCode,
+              city,
             };
           }
           throw new Error(`Restaurant ${restaurantId} not found`);

@@ -108,24 +108,20 @@ const App = () => {
 
 const Form = () => {
   const { restaurantId } = useParams();
-  const [restaurantName, setRestaurantName] = useState();
+  const [restaurant, setRestaurant] = useState();
   useEffect(() => {
-    const getRestaurantName = async () => {
-      const { name } = await restaurantRepository.get({ restaurantId });
-      setRestaurantName(name);
+    const getRestaurant = async () => {
+      const restaurant = await restaurantRepository.get({ restaurantId });
+      setRestaurant(restaurant);
     };
-    getRestaurantName();
-  }, [setRestaurantName, restaurantId]);
-  return restaurantName ? (
+    getRestaurant();
+  }, [setRestaurant, restaurantId]);
+  return restaurant ? (
     <Box>
       <Heading textAlign="center" as="h1" size="md" marginBottom="1.5em">
-        {restaurantName}
+        {restaurant.name}
       </Heading>
-      <AddContactForm
-        restaurantName={restaurantName}
-        restaurantId={restaurantId}
-        addContact={addContact}
-      />
+      <AddContactForm restaurant={restaurant} addContact={addContact} />
     </Box>
   ) : (
     <Spinner />

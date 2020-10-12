@@ -4,7 +4,7 @@ export const createSignUp = ({
   qrCodeGenerator,
   encrypter,
   localDataRepository,
-}) => async ({ restaurantName, email, password }) =>
+}) => async ({ restaurantName, email, password, address, postalCode, city }) =>
   new Promise(async (resolve, reject) => {
     try {
       const restaurantId = await authenticationGateway.createRestaurantUser({
@@ -19,6 +19,9 @@ export const createSignUp = ({
         name: restaurantName,
         publicKey,
         qrCode,
+        address,
+        postalCode,
+        city,
       };
       await localDataRepository.savePrivateKey(privateKey);
       await restaurantRepository.save(restaurant);

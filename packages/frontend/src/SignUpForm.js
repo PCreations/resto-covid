@@ -44,6 +44,15 @@ const validateForm = (values) => {
   ) {
     errors.passwordConfirmation = "Les mots de passe ne correspondent pas";
   }
+  if (!values.address) {
+    errors.address = "Champs requis";
+  }
+  if (!values.postalCode) {
+    errors.postalCode = "Champs requis";
+  }
+  if (!values.city) {
+    errors.postalCode = "Champs requis";
+  }
   return errors;
 };
 
@@ -56,6 +65,9 @@ const doSignUp = ({ signUp, backupPrivateKey, notifySignUpSuccess }) => async (
       restaurantName: values.name,
       email: values.email,
       password: values.password,
+      address: values.address,
+      postalCode: values.postalCode,
+      city: values.city,
     });
     await backupPrivateKey({
       restaurantId,
@@ -64,6 +76,9 @@ const doSignUp = ({ signUp, backupPrivateKey, notifySignUpSuccess }) => async (
     getAnalytics().logEvent("sign_up", {
       restaurantName: values.name,
       email: values.email,
+      address: values.address,
+      postalCode: values.postalCode,
+      city: values.city,
     });
     notifySignUpSuccess();
   } catch (err) {
@@ -189,6 +204,9 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
         email: "",
         password: "",
         passwordConfirmation: "",
+        address: "",
+        postalCode: "",
+        city: "Paris",
         words: faker.random.words(10).toLowerCase(),
       }}
       validate={validateForm}
@@ -242,6 +260,51 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               onChange={handleChange}
             />
             <FormErrorMessage>{errors.email}</FormErrorMessage>
+          </FormControl>
+          <FormControl
+            isRequired
+            isInvalid={errors.address && touched.address}
+            paddingBottom="1em"
+          >
+            <FormLabel htmlFor="address">Adresse</FormLabel>
+            <Input
+              type="text"
+              id="address"
+              name="address"
+              value={values.address}
+              onChange={handleChange}
+            />
+            <FormErrorMessage>{errors.address}</FormErrorMessage>
+          </FormControl>
+          <FormControl
+            isRequired
+            isInvalid={errors.postalCode && touched.postalCode}
+            paddingBottom="1em"
+          >
+            <FormLabel htmlFor="postalCode">Code Postal</FormLabel>
+            <Input
+              type="text"
+              id="postalCode"
+              name="postalCode"
+              value={values.postalCode}
+              onChange={handleChange}
+            />
+            <FormErrorMessage>{errors.city}</FormErrorMessage>
+          </FormControl>
+          <FormControl
+            isRequired
+            isInvalid={errors.city && touched.city}
+            paddingBottom="1em"
+          >
+            <FormLabel htmlFor="city">Ville</FormLabel>
+            <Input
+              type="text"
+              id="city"
+              name="city"
+              value={values.city}
+              onChange={handleChange}
+            />
+            <FormErrorMessage>{errors.city}</FormErrorMessage>
           </FormControl>
           <FormControl
             isRequired

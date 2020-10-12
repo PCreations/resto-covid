@@ -65,8 +65,7 @@ const sendContactInformation = ({
 };
 
 export const AddContactForm = ({
-  restaurantId,
-  restaurantName,
+  restaurant,
   addContact,
   saveInputs = true,
 }) => {
@@ -98,7 +97,7 @@ export const AddContactForm = ({
       onSubmit={sendContactInformation({
         saveInputs,
         addContact,
-        restaurantId,
+        restaurantId: restaurant.id,
         notifyContactSent,
       })}
     >
@@ -172,7 +171,7 @@ export const AddContactForm = ({
           <FormHelperText marginTop="1em">
             Les informations recueillies sur ce formulaire sont enregistrées et
             utilisées uniquement par l'établissement{" "}
-            <strong>"{restaurantName}"</strong>. Conformément aux obligations
+            <strong>"{restaurant.name}"</strong>. Conformément aux obligations
             prévues dans le protocole sanitaire défini par arrêté préfectoral,
             vos données seront uniquement utilisées pour faciliter la recherche
             des « cas contacts » par les autorités sanitaires, et ne seront pas
@@ -187,9 +186,11 @@ export const AddContactForm = ({
             votre droit à la limitation du traitement de vos données. Pour
             exercer ces droits ou pour toute question sur le traitement de vos
             données, vous pouvez contacter l'établissement{" "}
-            <strong>"{restaurantName}"</strong>. Si vous estimez, après les
-            avoir contacté, que vos droits Informatique et Libertés ne sont pas
-            respectés, vous pouvez adresser une réclamation à la CNIL.
+            <strong>"{restaurant.name}"</strong> à l'adresse suivante :{" "}
+            {`${restaurant.address} ${restaurant.postalCode} ${restaurant.city}`}
+            . Si vous estimez, après les avoir contacté, que vos droits
+            Informatique et Libertés ne sont pas respectés, vous pouvez adresser
+            une réclamation à la CNIL.
           </FormHelperText>
         </form>
       )}
@@ -198,8 +199,13 @@ export const AddContactForm = ({
 };
 
 AddContactForm.propTypes = {
-  restaurantId: PropTypes.string.isRequired,
-  restaurantName: PropTypes.string.isRequired,
+  restaurant: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    address: PropTypes.string.isRequired,
+    postalCode: PropTypes.string.isRequired,
+    city: PropTypes.string.isRequired,
+  }),
   addContact: PropTypes.func.isRequired,
   onContactAdded: PropTypes.func,
   saveInputs: PropTypes.bool,

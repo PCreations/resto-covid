@@ -12,6 +12,9 @@ describe("signUp", () => {
     const restaurantName = "My Restaurant";
     const password = "my-restaurant-password";
     const email = "myrestaurant@example.com";
+    const address = "15 rue Dupont";
+    const postalCode = "75017";
+    const city = "Paris";
     const authenticationGateway = createInMemoryAuthenticationGateway({
       getNextRestaurantId() {
         return restaurantId;
@@ -34,6 +37,9 @@ describe("signUp", () => {
       restaurantName,
       email,
       password,
+      address,
+      postalCode,
+      city,
     });
 
     const {
@@ -48,6 +54,9 @@ describe("signUp", () => {
       id: restaurantId,
       name: restaurantName,
       publicKey: restaurantPublicKey,
+      address,
+      postalCode,
+      city,
     });
     expect(qrCode).toEqual(expectedQrCode);
     expect(privateKey).toEqual(restaurantPrivateKey);
