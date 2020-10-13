@@ -3,13 +3,18 @@ import { BadCredentialsError } from "../../domain/errors";
 export const createInMemoryAuthenticationGateway = ({
   getNextRestaurantId,
   users = {},
+  currentRestaurantUser = {},
 } = {}) => {
-  let listeners = [];
+  const signInListeners = [];
+  const signOutListeners = [];
   let lastSignedUpRestaurant = {};
-  let currentRestaurantUser;
+  let theCurrentRestaurantUser = currentRestaurantUser;
   return {
     onRestaurantSignedIn(cb) {
-      listeners.push(cb);
+      signInListeners.push(cb);
+    },
+    onRestaurantSignedOut(cb) {
+      signOutListeners.push(cb);
     },
     createRestaurantUser({ restaurantName, email, password }) {
       const id = getNextRestaurantId();
@@ -22,17 +27,21 @@ export const createInMemoryAuthenticationGateway = ({
       return id;
     },
     async signIn({ email, password }) {
-      currentRestaurantUser = users[`${email}-${password}`];
-      if (!currentRestaurantUser) {
+      theCurrentRestaurantUser = users[`${email}-${password}`];
+      if (!theCurrentRestaurantUser) {
         throw new BadCredentialsError();
       }
-      listeners.map((cb) => cb(currentRestaurantUser));
+      signInListeners.map((cb) => cb(theCurrentRestaurantUser));
+    },
+    async signOut() {
+      theCurrentRestaurantUser = null;
+      signOutListeners.map((cb) => cb(theCurrentRestaurantUser));
     },
     get lastSignedUpRestaurant() {
       return lastSignedUpRestaurant;
     },
     get currentRestaurantUser() {
-      return currentRestaurantUser;
+      return theCurrentRestaurantUser;
     },
   };
 };

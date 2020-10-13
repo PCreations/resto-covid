@@ -16,6 +16,11 @@ export const createFirebaseAuthenticationGateway = () => {
         );
       });
     },
+    onRestaurantSignedOut(cb) {
+      return firebaseAuth.onAuthStateChanged((user) => {
+        if (!user) cb(user);
+      });
+    },
     async createRestaurantUser({ restaurantName, email, password }) {
       return new Promise((resolve, reject) =>
         firebaseAuth
@@ -43,6 +48,17 @@ export const createFirebaseAuthenticationGateway = () => {
           throw new BadCredentialsError();
         })
         .then(userAuthenticated);
+    },
+    async signOut() {
+      const userUnauthenticated = new Promise((resolve) => {
+        const unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
+          if (!user) {
+            unsubscribe();
+            resolve();
+          }
+        });
+      });
+      return firebaseAuth.signOut().then(userUnauthenticated);
     },
     get currentRestaurantUser() {
       const user = firebaseAuth.currentUser;

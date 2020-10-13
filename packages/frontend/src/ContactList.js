@@ -28,7 +28,11 @@ import {
   Grid,
 } from "@chakra-ui/core";
 import { format } from "date-fns";
-import { AiOutlineQrcode, AiOutlineExport } from "react-icons/ai";
+import {
+  AiOutlineQrcode,
+  AiOutlineExport,
+  AiOutlineLogout,
+} from "react-icons/ai";
 import { MdPersonAdd } from "react-icons/md";
 import { AuthStateContext } from "./AuthContext";
 import { getAnalytics } from "./adapters/shared/firebase";
@@ -95,6 +99,7 @@ const RowCell = ({ data, isEven }) => (
 
 export const ContactList = ({
   getContacts,
+  signOut,
   restorePrivateKey,
   restaurantRepository,
 }) => {
@@ -200,12 +205,17 @@ export const ContactList = ({
     });
     ReactDOM.findDOMNode(exportCsvRef.current).click();
     toast({
-      title: "Fichiers téléchargé",
+      title: "Fichier téléchargé",
       description: "Regardez dans votre dossier téléchargement",
       status: "success",
       duration: 5000,
       isClosable: true,
     });
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    history.push("/");
   };
 
   const csvData = [
@@ -237,6 +247,7 @@ export const ContactList = ({
             <Text textAlign="center" marginBottom="1em">
               Lien vers le formulaire d'ajout de contact :{" "}
               <Link
+                overflowWrap="anywhere"
                 href={getFormLink({ restaurantId: restaurant.id })}
                 title="Formulaire d'ajout de contact"
               >
@@ -287,11 +298,23 @@ export const ContactList = ({
                 </CSVLink>
               </>
             )}
+            <Button
+              leftIcon={AiOutlineLogout}
+              variantColor="red"
+              color="white"
+              variant="solid"
+              onClick={handleSignOut}
+              size="lg"
+              marginTop="1em"
+            >
+              Se déconnecter
+            </Button>
           </Flex>
           <Modal
             onClose={onClose}
             isOpen={isOpen}
             isCentered
+            size={["xs", "sm"]}
             scrollBehavior="outside"
           >
             <ModalOverlay />
@@ -395,6 +418,7 @@ export const ContactList = ({
 
 ContactList.propTypes = {
   getContacts: PropTypes.func.isRequired,
+  signOut: PropTypes.func.isRequired,
   restorePrivateKey: PropTypes.func.isRequired,
   restaurantRepository: PropTypes.shape({
     get: PropTypes.func.isRequired,

@@ -24,6 +24,7 @@ export const RestaurantDashboard = ({
   addContact,
   getContacts,
   signUp,
+  signOut,
   backupPrivateKey,
   restorePrivateKey,
   restaurantRepository,
@@ -41,6 +42,7 @@ export const RestaurantDashboard = ({
         <ContactList
           addContact={addContact}
           getContacts={getContacts}
+          signOut={signOut}
           restorePrivateKey={restorePrivateKey}
           restaurantRepository={restaurantRepository}
         />
@@ -100,6 +102,7 @@ RestaurantDashboard.propTypes = {
   addContact: PropTypes.func.isRequired,
   getContacts: PropTypes.func.isRequired,
   signUp: PropTypes.func.isRequired,
+  signOut: PropTypes.func.isRequired,
   backupPrivateKey: PropTypes.func.isRequired,
   restorePrivateKey: PropTypes.func.isRequired,
   restaurantRepository: PropTypes.shape({

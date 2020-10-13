@@ -340,18 +340,21 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
             />
             <FormErrorMessage>{errors.passwordConfirmation}</FormErrorMessage>
           </FormControl>
-          <FormControl>
-            <FormLabel htmlFor="words" color="red">
-              Sauvegardez précieusement cette liste de mots, elle vous permettra
-              de vous connecter depuis d'autres appareils.
-            </FormLabel>
-            <Textarea
-              id="words"
-              name="words"
-              value={values.words}
-              color="red"
-            />
-          </FormControl>
+          <Box bg="tomato" w="100%" p={4} color="white">
+            <FormControl>
+              <FormLabel htmlFor="words" color="red">
+                Sauvegardez précieusement cette liste de mots, elle vous
+                permettra de vous connecter depuis d'autres appareils ou de
+                récupérer le fichier clients en cas de problème.
+              </FormLabel>
+              <Textarea
+                id="words"
+                name="words"
+                value={values.words}
+                color="black"
+              />
+            </FormControl>
+          </Box>
           <Flex justify="center">
             <Button
               mt={4}

@@ -21,6 +21,7 @@ import { createLocalStorageDataRepository } from "./adapters/local-data-reposito
 import { createSealedBoxEncrypter } from "./adapters/encrypter";
 import { createQRCodeGenerator } from "./adapters/qr-code-generator";
 import { createSignIn } from "./use-cases/sign-in";
+import { createSignOut } from "./use-cases/sign-out";
 import { createBackupPrivateKey } from "./use-cases/backup-private-key";
 import { createRestorePrivateKey } from "./use-cases/restore-private-key";
 import { createSignUp } from "./use-cases/sign-up";
@@ -62,6 +63,7 @@ const restorePrivateKey = createRestorePrivateKey({
   encrypter,
 });
 const signIn = createSignIn({ authenticationGateway });
+const signOut = createSignOut({ authenticationGateway });
 const getContacts = createGetContacts({
   encrypter,
   localDataRepository,
@@ -87,6 +89,7 @@ const App = () => {
                   addContact={addContact}
                   getContacts={getContacts}
                   signUp={signUp}
+                  signOut={signOut}
                   restorePrivateKey={restorePrivateKey}
                   backupPrivateKey={backupPrivateKey}
                 />
