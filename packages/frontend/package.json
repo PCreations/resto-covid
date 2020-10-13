@@ -53,5 +53,8 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@testing-library/cypress": "^7.0.1",
+    "cypress": "^5.3.0"
+  }
 }

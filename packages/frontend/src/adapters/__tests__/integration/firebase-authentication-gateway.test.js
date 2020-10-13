@@ -2,7 +2,7 @@ import { auth as firebaseAuth } from "../../shared/firebase";
 import { createFirebaseAuthenticationGateway } from "../../authentication-gateway";
 import { BadCredentialsError } from "../../../domain/errors";
 
-describe.only("firebaseAuthenticationGateway", () => {
+describe("firebaseAuthenticationGateway", () => {
   it("creates a new firebase user", async (done) => {
     const restaurantName = "The Restaurant";
     const email = `restaurant${+new Date()}@email.com`;
@@ -63,7 +63,7 @@ describe.only("firebaseAuthenticationGateway", () => {
     await firebaseAuthenticationGateway.signIn({ email, password });
   });
 
-  it.only("signs out a user", (done) => {
+  it("signs out a user", (done) => {
     const firebaseAuthenticationGateway = createFirebaseAuthenticationGateway();
     const unsubscribe = firebaseAuth.onAuthStateChanged(async (user) => {
       if (user) {

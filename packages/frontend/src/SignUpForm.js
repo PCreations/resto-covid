@@ -121,7 +121,8 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
           </Flex>
           <Text paddingTop="2em">
             Si vous enregistrez un nouveau restaurant avec cet appareil, il sera
-            impossible de récupérer les contacts du précédent restaurant.
+            impossible de récupérer les contacts du précédent restaurant sans
+            renseigner la liste de mots aléatoire donnée à l'inscription.
           </Text>
           <Formik
             initialValues={{ confirmation: "" }}
@@ -166,6 +167,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
                     type="text"
                     id="confirmation"
                     name="confirmation"
+                    aria-label="confirmation"
                     aria-describedby="confirmation-help-text"
                     value={values.confirmation}
                     onChange={handleChange}
@@ -241,6 +243,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               type="text"
               id="name"
               name="name"
+              aria-label="name"
               value={values.name}
               onChange={handleChange}
             />
@@ -256,6 +259,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               type="email"
               id="email"
               name="email"
+              aria-label="email"
               value={values.email}
               onChange={handleChange}
             />
@@ -271,6 +275,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               type="text"
               id="address"
               name="address"
+              aria-label="address"
               value={values.address}
               onChange={handleChange}
             />
@@ -286,6 +291,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               type="text"
               id="postalCode"
               name="postalCode"
+              aria-label="postalCode"
               value={values.postalCode}
               onChange={handleChange}
             />
@@ -301,6 +307,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               type="text"
               id="city"
               name="city"
+              aria-label="city"
               value={values.city}
               onChange={handleChange}
             />
@@ -316,6 +323,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               type="password"
               id="password"
               name="password"
+              aria-label="password"
               value={values.password}
               onChange={handleChange}
             />
@@ -335,6 +343,7 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
               type="password"
               id="passwordConfirmation"
               name="passwordConfirmation"
+              aria-label="passwordConfirmation"
               value={values.passwordConfirmation}
               onChange={handleChange}
             />
