@@ -4,7 +4,6 @@ import { useHistory } from "react-router-dom";
 import {
   Spinner,
   Box,
-  Image,
   Flex,
   Text,
   List,
@@ -18,7 +17,7 @@ import { AiOutlineQrcode, AiOutlineExport } from "react-icons/ai";
 import { AuthStateContext } from "./AuthContext";
 import { SignUpForm } from "./SignUpForm";
 import { ContactList } from "./ContactList";
-import logo from "./logo.png";
+import { Logo } from "./Logo";
 
 export const RestaurantDashboard = ({
   addContact,
@@ -52,12 +51,7 @@ export const RestaurantDashboard = ({
   return (
     <Box>
       <Flex justifyContent="center" direction="column">
-        <Image
-          src={logo}
-          alt="Resto Covid"
-          size={300}
-          alignSelf="center"
-        ></Image>
+        <Logo />
         <List spacing={4} marginBottom="1.5em">
           <ListItem>
             <ListIcon icon={RiContactsBookFill} color="blue.500"></ListIcon>
@@ -71,7 +65,7 @@ export const RestaurantDashboard = ({
           <ListItem>
             <ListIcon icon={AiOutlineQrcode} color="blue.500"></ListIcon>
             Enregistrez votre restaurant et bénéficiez d'un QR code à mettre à
-            disposition de vos clients pour qu'ils puissent communiquer leur
+            disposition de vos clients pour qu'ils puissent communiquer leurs
             informations de contact.
           </ListItem>
           <ListItem>

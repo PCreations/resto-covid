@@ -30,8 +30,9 @@ import { RestaurantDashboard } from "./RestaurantDashboard";
 import { SignUpForm } from "./SignUpForm";
 import { AuthProvider } from "./AuthProvider";
 import { SignInForm } from "./SignInForm";
-import { Error as ErrorComponent } from "./Error";
+import { Error, Error as ErrorComponent } from "./Error";
 import { captureException } from "./capture-exception";
+import { NotFound } from "./NotFound";
 
 const authenticationGateway = createFirebaseAuthenticationGateway();
 const restaurantRepository = createFirebaseRestaurantRepository();
@@ -113,7 +114,7 @@ const App = () => {
                   <Form />
                 </Route>
                 <Route path="*">
-                  <div>404</div>
+                  <NotFound />
                 </Route>
               </Switch>
             </Router>
@@ -129,13 +130,23 @@ const App = () => {
 const Form = () => {
   const { restaurantId } = useParams();
   const [restaurant, setRestaurant] = useState();
+  const [hasError, setHasError] = useState(false);
   useEffect(() => {
     const getRestaurant = async () => {
-      const restaurant = await restaurantRepository.get({ restaurantId });
-      setRestaurant(restaurant);
+      try {
+        const restaurant = await restaurantRepository.get({ restaurantId });
+        setRestaurant(restaurant);
+      } catch (err) {
+        setHasError(true);
+        captureException(err);
+      }
     };
     getRestaurant();
-  }, [setRestaurant, restaurantId]);
+  }, [setRestaurant, setHasError, restaurantId]);
+
+  if (hasError) {
+    return <NotFound />;
+  }
   return restaurant ? (
     <Box>
       <Heading textAlign="center" as="h1" size="md" marginBottom="1.5em">
