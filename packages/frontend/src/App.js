@@ -7,8 +7,6 @@ import {
   Heading,
   Spinner,
 } from "@chakra-ui/core";
-import * as Sentry from "@sentry/react";
-import { Integrations } from "@sentry/tracing";
 import {
   BrowserRouter as Router,
   Switch,
@@ -32,13 +30,8 @@ import { RestaurantDashboard } from "./RestaurantDashboard";
 import { SignUpForm } from "./SignUpForm";
 import { AuthProvider } from "./AuthProvider";
 import { SignInForm } from "./SignInForm";
-
-Sentry.init({
-  dsn:
-    "https://b44818e4fa3f4953996f3d3721f4a458@o377168.ingest.sentry.io/5461082",
-  integrations: [new Integrations.BrowserTracing()],
-  tracesSampleRate: 1.0,
-});
+import { Error as ErrorComponent } from "./Error";
+import { captureException } from "./capture-exception";
 
 const authenticationGateway = createFirebaseAuthenticationGateway();
 const restaurantRepository = createFirebaseRestaurantRepository();
@@ -74,45 +67,60 @@ const addContact = createAddContact({
   encrypter,
 });
 
+const isSupportingLocalStorage = () => {
+  try {
+    localStorage.setItem("support", true);
+    localStorage.removeItem("support");
+    return true;
+  } catch (e) {
+    captureException(new Error("Local storage not supported"));
+    return false;
+  }
+};
+
 const App = () => {
   return (
     <AuthProvider authenticationGateway={authenticationGateway}>
       <ThemeProvider>
         <CSSReset />
-        <Flex align="center" justify="center" padding="1em">
-          <Router>
-            <Switch>
-              <Route exact path="/">
-                <RestaurantDashboard
-                  localDataRepository={localDataRepository}
-                  restaurantRepository={restaurantRepository}
-                  addContact={addContact}
-                  getContacts={getContacts}
-                  signUp={signUp}
-                  signOut={signOut}
-                  restorePrivateKey={restorePrivateKey}
-                  backupPrivateKey={backupPrivateKey}
-                />
-              </Route>
-              <Route exact path="/signup">
-                <SignUpForm
-                  signUp={signUp}
-                  backupPrivateKey={backupPrivateKey}
-                  getPrivateKey={localDataRepository.getPrivateKey}
-                />
-              </Route>
-              <Route exact path="/signin">
-                <SignInForm signIn={signIn} />
-              </Route>
-              <Route path="/form/:restaurantId">
-                <Form />
-              </Route>
-              <Route path="*">
-                <div>404</div>
-              </Route>
-            </Switch>
-          </Router>
-        </Flex>
+        {isSupportingLocalStorage() ? (
+          <Flex align="center" justify="center" padding="1em">
+            <Router>
+              <Switch>
+                <Route exact path="/">
+                  <RestaurantDashboard
+                    localDataRepository={localDataRepository}
+                    restaurantRepository={restaurantRepository}
+                    addContact={addContact}
+                    getContacts={getContacts}
+                    signUp={signUp}
+                    signOut={signOut}
+                    restorePrivateKey={restorePrivateKey}
+                    backupPrivateKey={backupPrivateKey}
+                  />
+                </Route>
+                <Route exact path="/signup">
+                  <SignUpForm
+                    signUp={signUp}
+                    backupPrivateKey={backupPrivateKey}
+                    getPrivateKey={localDataRepository.getPrivateKey}
+                  />
+                </Route>
+                <Route exact path="/signin">
+                  <SignInForm signIn={signIn} />
+                </Route>
+                <Route path="/form/:restaurantId">
+                  <Form />
+                </Route>
+                <Route path="*">
+                  <div>404</div>
+                </Route>
+              </Switch>
+            </Router>
+          </Flex>
+        ) : (
+          <ErrorComponent message="Votre navigateur est trop vieux et pas assez sécurisé pour utiliser Resto Covid :(" />
+        )}
       </ThemeProvider>
     </AuthProvider>
   );

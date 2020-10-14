@@ -4,7 +4,7 @@ import { createFirebaseRestaurantRepository } from "../../restaurant-repository"
 const ONE_DAY_IN_MS = 24 * 3600 * 1000;
 
 const testUser = {
-  id: "tAxVeB9MjcQbExQvunDvFPIvXhW2",
+  id: "j5xfuvlF74eFw22X39WsrhALhj42",
   email: "pcriulan+testuser@gmail.com",
   password: "pcriulan+testuser@gmail.com",
 };

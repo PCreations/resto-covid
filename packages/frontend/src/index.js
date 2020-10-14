@@ -2,10 +2,22 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
+import * as Sentry from "@sentry/react";
+import { Integrations } from "@sentry/tracing";
+import { Error } from "./Error";
+
+Sentry.init({
+  dsn:
+    "https://b44818e4fa3f4953996f3d3721f4a458@o377168.ingest.sentry.io/5461082",
+  integrations: [new Integrations.BrowserTracing()],
+  tracesSampleRate: 1.0,
+});
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Sentry.ErrorBoundary fallback={Error}>
+      <App />
+    </Sentry.ErrorBoundary>
   </React.StrictMode>,
   document.getElementById("root")
 );

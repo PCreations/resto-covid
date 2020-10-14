@@ -2,6 +2,7 @@ import faker from "faker";
 import { createIdentityEncrypter } from "../adapters/encrypter";
 import { createInMemoryLocalDataRepository } from "../adapters/local-data-repository/in-memory";
 import { createInMemoryRestaurantRepository } from "../adapters/restaurant-repository";
+import { DecryptBackupPrivateKeyError } from "../domain/errors";
 import { createGetContacts } from "../use-cases/get-contacts";
 
 const ONE_DAY_IN_MS = 24 * 3600 * 1000;

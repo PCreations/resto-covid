@@ -37,6 +37,9 @@ import { MdPersonAdd } from "react-icons/md";
 import { AuthStateContext } from "./AuthContext";
 import { getAnalytics } from "./adapters/shared/firebase";
 import "./qr-code.css";
+import { DecryptBackupPrivateKeyError } from "./domain/errors";
+import { captureException } from "./capture-exception";
+import { Error } from "./Error";
 
 const formatContact = ({ date, contact }) => ({
   date: format(date, "dd/MM/yyyy HH:mm"),
@@ -60,11 +63,14 @@ const retrieveContacts = async ({
     setNeedToRestorePrivateKey(false);
     setContacts(formattedContacts);
   } catch (err) {
-    console.error("Error while retrieving contacts", {
-      privateKey: localStorage.getItem("privateKey"),
-      err,
-    });
-    setNeedToRestorePrivateKey(true);
+    if (err instanceof DecryptBackupPrivateKeyError) {
+      console.error("Error while retrieving contacts", {
+        privateKey: localStorage.getItem("privateKey"),
+        err,
+      });
+      setNeedToRestorePrivateKey(true);
+    }
+    throw err;
   }
 };
 
@@ -105,6 +111,7 @@ export const ContactList = ({
 }) => {
   const history = useHistory();
   const { currentRestaurantUser } = useContext(AuthStateContext);
+  const [hasError, setHasError] = useState(false);
   const [contacts, setContacts] = useState(null);
   const [restaurant, setRestaurant] = useState();
   const [needToRestorePrivateKey, setNeedToRestorePrivateKey] = useState(false);
@@ -138,9 +145,11 @@ export const ContactList = ({
           restaurantId: currentRestaurantUser.id,
         });
         setRestaurant(restaurant);
+        retriesCount = 0;
       } catch (err) {
         if (retriesCount > 3) {
-          throw err;
+          setHasError(true);
+          captureException(err);
         }
         setTimeout(() => {
           retrieveRestaurant();
@@ -149,7 +158,7 @@ export const ContactList = ({
       }
     };
     retrieveRestaurant();
-  }, [setRestaurant, currentRestaurantUser, restaurantRepository]);
+  }, [setRestaurant, setHasError, currentRestaurantUser, restaurantRepository]);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -182,6 +191,7 @@ export const ContactList = ({
         setNeedToRestorePrivateKey,
       });
     } catch (err) {
+      captureException(err);
       setRetrievePrivateKeyError(
         "Mauvaise liste de mots. Veuillez réessayer. Respectez bien les espaces entre les mots"
       );
@@ -231,7 +241,9 @@ export const ContactList = ({
   const getFormLink = ({ restaurantId }) =>
     `${process.env.REACT_APP_BASE_URL}/form/${restaurantId}`;
 
-  return (
+  return hasError ? (
+    <Error />
+  ) : (
     <Box>
       {restaurant ? (
         <Flex alignItems="center" direction="column">
@@ -356,7 +368,7 @@ export const ContactList = ({
           {needToRestorePrivateKey ? (
             <Box color="black" p={4}>
               <Text marginBottom="1em">
-                Cette appareil n'est pas configuré pour accéder aux contacts.
+                Cet appareil n'est pas configuré pour accéder aux contacts.
                 Veuillez entrez la liste des mots qui vous a été fournie à
                 l'inscription :
               </Text>

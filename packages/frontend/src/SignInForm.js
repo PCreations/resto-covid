@@ -77,6 +77,7 @@ export const SignInForm = ({ signIn }) => {
                 type="email"
                 id="email"
                 name="email"
+                aria-label="email"
                 value={values.email}
                 onChange={handleChange}
               />
@@ -92,6 +93,7 @@ export const SignInForm = ({ signIn }) => {
                 type="password"
                 id="password"
                 name="password"
+                aria-label="password"
                 value={values.password}
                 onChange={handleChange}
               />
