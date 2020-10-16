@@ -8,7 +8,34 @@ import {
 } from "../domain/ensure-contact-is-valid";
 
 describe("addContact", () => {
-  it("adds contact information encrypted from restaurant's public key", async () => {
+  it("adds contact information", async () => {
+    const now = new Date();
+    const contactInformation = {
+      firstName: "Pierre",
+      lastName: "Criulanscy",
+      phoneNumber: "0102030405",
+    };
+    const restaurantId = "restaurant-id";
+    const restaurantRepository = createInMemoryRestaurantRepository({
+      [restaurantId]: {
+        contacts: [],
+      },
+    });
+    const addContact = createAddContact({
+      restaurantRepository,
+    });
+
+    await addContact({ restaurantId, contactInformation, now });
+
+    const contacts = await restaurantRepository.getContacts({ restaurantId });
+
+    const expectedContact = {
+      date: now,
+      contact: contactInformation,
+    };
+    expect(contacts).toContainEqual(expectedContact);
+  });
+  it("(e2e encryption deprecated) adds contact information encrypted from restaurant's public key", async () => {
     const now = new Date();
     const contactInformation = {
       firstName: "Pierre",

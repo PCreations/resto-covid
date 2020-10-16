@@ -6,13 +6,20 @@ export const createAddContact = ({
 }) => async ({ restaurantId, contactInformation, now }) => {
   ensureContactIsValid(contactInformation);
   const { publicKey } = await restaurantRepository.get({ restaurantId });
-  const encryptedContact = encrypter.encrypt({
-    data: contactInformation,
-    publicKey,
-  });
+  if (publicKey) {
+    const encryptedContact = encrypter.encrypt({
+      data: contactInformation,
+      publicKey,
+    });
+    return restaurantRepository.addContact({
+      restaurantId,
+      now,
+      encryptedContact,
+    });
+  }
   return restaurantRepository.addContact({
     restaurantId,
     now,
-    encryptedContact,
+    encryptedContact: contactInformation,
   });
 };

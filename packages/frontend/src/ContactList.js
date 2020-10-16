@@ -37,7 +37,7 @@ import { MdPersonAdd } from "react-icons/md";
 import { AuthStateContext } from "./AuthContext";
 import { getAnalytics } from "./adapters/shared/firebase";
 import "./qr-code.css";
-import { DecryptBackupPrivateKeyError } from "./domain/errors";
+import { MissingPrivateKeyError } from "./domain/errors";
 import { captureException } from "./capture-exception";
 import { Error } from "./Error";
 
@@ -63,14 +63,14 @@ const retrieveContacts = async ({
     setNeedToRestorePrivateKey(false);
     setContacts(formattedContacts);
   } catch (err) {
-    if (err instanceof DecryptBackupPrivateKeyError) {
-      console.error("Error while retrieving contacts", {
-        privateKey: localStorage.getItem("privateKey"),
+    if (err instanceof MissingPrivateKeyError) {
+      console.error("Missing private key", {
         err,
       });
       setNeedToRestorePrivateKey(true);
+    } else {
+      throw err;
     }
-    throw err;
   }
 };
 

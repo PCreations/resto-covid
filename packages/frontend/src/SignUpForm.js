@@ -1,4 +1,3 @@
-import faker from "faker";
 import React, { useCallback, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Formik } from "formik";
@@ -12,7 +11,6 @@ import {
   FormHelperText,
   Flex,
   Input,
-  Textarea,
   Button,
   Spinner,
   Text,
@@ -56,22 +54,18 @@ const validateForm = (values) => {
   return errors;
 };
 
-const doSignUp = ({ signUp, backupPrivateKey, notifySignUpSuccess }) => async (
+const doSignUp = ({ signUp, notifySignUpSuccess }) => async (
   values,
   { setSubmitting, setStatus }
 ) => {
   try {
-    const { id: restaurantId } = await signUp({
+    await signUp({
       restaurantName: values.name,
       email: values.email,
       password: values.password,
       address: values.address,
       postalCode: values.postalCode,
       city: values.city,
-    });
-    await backupPrivateKey({
-      restaurantId,
-      words: values.words,
     });
     getAnalytics().logEvent("sign_up", {
       restaurantName: values.name,
@@ -209,12 +203,10 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
         address: "",
         postalCode: "",
         city: "Paris",
-        words: faker.random.words(10).toLowerCase(),
       }}
       validate={validateForm}
       onSubmit={doSignUp({
         signUp,
-        backupPrivateKey,
         notifySignUpSuccess,
       })}
     >
@@ -349,21 +341,6 @@ export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
             />
             <FormErrorMessage>{errors.passwordConfirmation}</FormErrorMessage>
           </FormControl>
-          <Box bg="tomato" w="100%" p={4} color="white">
-            <FormControl>
-              <FormLabel htmlFor="words" color="red">
-                Sauvegardez précieusement cette liste de mots, elle vous
-                permettra de vous connecter depuis d'autres appareils ou de
-                récupérer le fichier clients en cas de problème.
-              </FormLabel>
-              <Textarea
-                id="words"
-                name="words"
-                value={values.words}
-                color="black"
-              />
-            </FormControl>
-          </Box>
           <Flex justify="center">
             <Button
               mt={4}
