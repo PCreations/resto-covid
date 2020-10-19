@@ -68,60 +68,45 @@ const addContact = createAddContact({
   encrypter,
 });
 
-const isSupportingLocalStorage = () => {
-  try {
-    localStorage.setItem("support", true);
-    localStorage.removeItem("support");
-    return true;
-  } catch (e) {
-    captureException(new Error("Local storage not supported"));
-    return false;
-  }
-};
-
 const App = () => {
   return (
     <AuthProvider authenticationGateway={authenticationGateway}>
       <ThemeProvider>
         <CSSReset />
-        {isSupportingLocalStorage() ? (
-          <Flex align="center" justify="center" padding="1em">
-            <Router>
-              <Switch>
-                <Route exact path="/">
-                  <RestaurantDashboard
-                    localDataRepository={localDataRepository}
-                    restaurantRepository={restaurantRepository}
-                    addContact={addContact}
-                    getContacts={getContacts}
-                    signUp={signUp}
-                    signOut={signOut}
-                    restorePrivateKey={restorePrivateKey}
-                    backupPrivateKey={backupPrivateKey}
-                  />
-                </Route>
-                <Route exact path="/signup">
-                  <SignUpForm
-                    signUp={signUp}
-                    backupPrivateKey={backupPrivateKey}
-                    getPrivateKey={localDataRepository.getPrivateKey}
-                  />
-                </Route>
-                <Route exact path="/signin">
-                  <SignInForm signIn={signIn} />
-                </Route>
-                <Route path="/form/:restaurantId">
-                  <Form />
-                </Route>
-                <Route path="*">
-                  <NotFound />
-                </Route>
-              </Switch>
-            </Router>
-          </Flex>
-        ) : (
-          <ErrorComponent message="Votre navigateur est trop vieux et pas assez sécurisé pour utiliser Resto Covid :(" />
-        )}
+        <Flex align="center" justify="center" padding="1em">
+          <Router>
+            <Switch>
+              <Route exact path="/">
+                <RestaurantDashboard
+                  localDataRepository={localDataRepository}
+                  restaurantRepository={restaurantRepository}
+                  addContact={addContact}
+                  getContacts={getContacts}
+                  signUp={signUp}
+                  signOut={signOut}
+                  restorePrivateKey={restorePrivateKey}
+                  backupPrivateKey={backupPrivateKey}
+                />
+              </Route>
+              <Route exact path="/signup">
+                <SignUpForm
+                  signUp={signUp}
+                  backupPrivateKey={backupPrivateKey}
+                  getPrivateKey={localDataRepository.getPrivateKey}
+                />
+              </Route>
+              <Route exact path="/signin">
+                <SignInForm signIn={signIn} />
+              </Route>
+              <Route path="/form/:restaurantId">
+                <Form />
+              </Route>
+              <Route path="*">
+                <NotFound />
+              </Route>
+            </Switch>
+          </Router>
+        </Flex>
       </ThemeProvider>
     </AuthProvider>
   );
