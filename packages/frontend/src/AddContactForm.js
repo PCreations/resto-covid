@@ -54,6 +54,7 @@ const sendContactInformation = ({
     contactInformation: contact,
     now,
   });
+  window.fbq("track", "Contact");
   getAnalytics().logEvent("contact_added", {
     restaurantId,
   });

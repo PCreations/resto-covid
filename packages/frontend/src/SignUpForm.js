@@ -67,6 +67,7 @@ const doSignUp = ({ signUp, notifySignUpSuccess }) => async (
       postalCode: values.postalCode,
       city: values.city,
     });
+    window.fbq("track", "CompleteRegistration");
     getAnalytics().logEvent("sign_up", {
       restaurantName: values.name,
       email: values.email,
@@ -84,16 +85,16 @@ const doSignUp = ({ signUp, notifySignUpSuccess }) => async (
   }
 };
 
-export const SignUpForm = ({ signUp, backupPrivateKey, getPrivateKey }) => {
+export const SignUpForm = ({ signUp, getPrivateKey }) => {
   const [signupHasSucceed, setSignupHasSucceed] = useState(false);
   const [privateKey, setPrivateKey] = useState("loading");
   const [
     confirmationToSignUpWithAnotherRestaurant,
     setConfirmationToSignUpWithAnotherRestaurant,
   ] = useState(false);
-  const notifySignUpSuccess = useCallback(() => setSignupHasSucceed(true), [
-    setSignupHasSucceed,
-  ]);
+  const notifySignUpSuccess = useCallback(() => {
+    setSignupHasSucceed(true);
+  }, [setSignupHasSucceed]);
 
   useEffect(() => {
     getPrivateKey().then(setPrivateKey);
