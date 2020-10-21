@@ -12,6 +12,7 @@ import {
   Switch,
   Route,
   useParams,
+  Link,
 } from "react-router-dom";
 import { createFirebaseAuthenticationGateway } from "./adapters/authentication-gateway";
 import { createFirebaseRestaurantRepository } from "./adapters/restaurant-repository";
@@ -33,6 +34,7 @@ import { SignInForm } from "./SignInForm";
 import { Error, Error as ErrorComponent } from "./Error";
 import { captureException } from "./capture-exception";
 import { NotFound } from "./NotFound";
+import { Legal } from "./Legal";
 
 const authenticationGateway = createFirebaseAuthenticationGateway();
 const restaurantRepository = createFirebaseRestaurantRepository();
@@ -73,8 +75,8 @@ const App = () => {
     <AuthProvider authenticationGateway={authenticationGateway}>
       <ThemeProvider>
         <CSSReset />
-        <Flex align="center" justify="center" padding="1em">
-          <Router>
+        <Router>
+          <Flex align="center" justify="center" padding="1em">
             <Switch>
               <Route exact path="/">
                 <RestaurantDashboard
@@ -98,6 +100,9 @@ const App = () => {
               <Route exact path="/signin">
                 <SignInForm signIn={signIn} />
               </Route>
+              <Route exact path="/mentions-legales">
+                <Legal />
+              </Route>
               <Route path="/form/:restaurantId">
                 <Form />
               </Route>
@@ -105,8 +110,17 @@ const App = () => {
                 <NotFound />
               </Route>
             </Switch>
-          </Router>
-        </Flex>
+          </Flex>
+          <Flex padding="1em" flexDir="column" justifyContent="center">
+            <hr style={{ width: "100%", borderColor: "black" }} />
+            <Link
+              to="/mentions-legales"
+              style={{ textAlign: "center", marginTop: "5px" }}
+            >
+              Mentions légales
+            </Link>
+          </Flex>
+        </Router>
       </ThemeProvider>
     </AuthProvider>
   );
